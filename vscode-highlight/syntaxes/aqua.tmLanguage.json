@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "aqua",
+  "patterns": [
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#semantics"
+    }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.aqua",
+          "match": "\\b(if|else|otherwise|use|try|catch|on|via|for|par|use|<-)\\b"
+        },
+        {
+          "name": "keyword.operator.logical.aqua",
+          "match": "\\b(eqs|neq)\\b"
+        },
+        {
+          "name": "keyword.declaration.aqua",
+          "match": "\\b(func|service|data|alias)\\b"
+        },
+        {
+          "name": "keyword.control.import",
+          "match": "\\b(import)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.aqua",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.aqua",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "comments": {
+      "name": "comment.line.aqua",
+      "begin": "--",
+      "end": "$"
+    },
+    "semantics": {
+      "patterns": [
+        {
+          "name": "storage.type.aqua",
+          "match": "\\b(string|bool|u8|u16|u32|u64|s8|s16|s32|s64|f32|f64)\\b"
+        }
+      ]
+    }
+  },
+  "scopeName": "source.aqua"
+}
