@@ -1,9 +1,5 @@
 name: "build vscode syntax highlight"
 
-defaults:
-  run:
-    working-directory: ./vscode-highlight
-
 on:
   push:
 
@@ -35,6 +31,7 @@ jobs:
 
       - name: Get version from npm and increment
         run: |
+          cd vscode-highlight
           # install semver and add it to PATH
           yarn global add semver
           PATH="$(yarn global bin):$PATH"
@@ -66,18 +63,22 @@ jobs:
           # save info to env
           echo "FINAL_VERSION=$MAX_VERSION" | tee -a $GITHUB_ENV
           echo "PKG_NAME=$PKG_NAME" | tee -a $GITHUB_ENV
-          echo "PKG_FILE=${PKG_NAME}-${FINAL_VERSION}.tgz" | tee -a $GITHUB_ENV
+          echo "PKG_FILE=vscode-highlight/${PKG_NAME}-${FINAL_VERSION}.tgz" | tee -a $GITHUB_ENV
 
       ### Set version
       - name: Set version to ${{ env.FINAL_VERSION }}
-        run: yarn version --new-version ${{ env.FINAL_VERSION }} --no-git-tag-version
+        run: |
+          cd vscode-highlight
+          yarn version --new-version ${{ env.FINAL_VERSION }} --no-git-tag-version
 
       ### Pack npm package
       - uses: actions/setup-node@v1
         with:
           node-version: "15"
           registry-url: "https://registry.npmjs.org"
-      - run: npm pack
+      - run: |
+          cd vscode-highlight
+          npm pack
 
       ### Create a pre-release
       - name: Create Release
