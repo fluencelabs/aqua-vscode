@@ -2,7 +2,7 @@ name: "build vscode syntax highlight"
 
 defaults:
   run:
-    working-directory: ./vscode-highlight
+    working-directory: vscode-highlight
 
 on:
   push:
