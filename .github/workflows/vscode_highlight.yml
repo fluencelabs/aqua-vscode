@@ -35,6 +35,8 @@ jobs:
 
       - name: Get version from npm and increment
         run: |
+          pwd
+          ls
           # install semver and add it to PATH
           yarn global add semver
           PATH="$(yarn global bin):$PATH"
