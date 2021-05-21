@@ -1,5 +1,9 @@
 name: "build vscode syntax highlight"
 
+defaults:
+  run:
+    working-directory: ./vscode-highlight
+
 on:
   push:
 
@@ -9,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: vscode-highlight
         shell: bash
 
     steps:
