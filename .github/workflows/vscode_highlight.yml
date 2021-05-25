@@ -99,5 +99,5 @@ jobs:
             Version: ${{ env.FINAL_VERSION }}
           files: |
             ${{ env.PKG_FILE }}
-          draft: true
-          prerelease: false
+          draft: false
+          prerelease: true
