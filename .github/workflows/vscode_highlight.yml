@@ -89,15 +89,13 @@ jobs:
           vsce package
 
       ### create release
-      - uses: marvinpinto/action-automatic-releases@latest
+      uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # changelog will be automatically generated from the history
-          # between tag env.BASE_VERSION (eg 0.1.0 or 0.2.0, etc)
-          # and the current commit
-          #automatic_release_tag: "${{ env.BASE_VERSION }}"
-          title: "Syntax highlight plugin for Visual Studio Code ${{ env.VERSION }}"
-          files: |
+          tag_name: ${{ github.ref }}
+          release_name: VERSION ${{ env.VERSION }}
+          body_path: |
             ${{ env.PKG_FILE }}
           draft: true
           prerelease: false
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
