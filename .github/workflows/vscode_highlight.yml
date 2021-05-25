@@ -63,7 +63,7 @@ jobs:
           # save info to env
           echo "FINAL_VERSION=$MAX_VERSION" | tee -a $GITHUB_ENV
           echo "PKG_NAME=$PKG_NAME" | tee -a $GITHUB_ENV
-          echo "PKG_FILE=vscode-highlight/${PKG_NAME}-${FINAL_VERSION}.tgz" | tee -a $GITHUB_ENV
+          echo "PKG_FILE=vscode-highlight/${PKG_NAME}-${FINAL_VERSION}.vsix" | tee -a $GITHUB_ENV
 
       ### Set version
       - name: Set version to ${{ env.FINAL_VERSION }}
@@ -78,7 +78,8 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - run: |
           cd vscode-highlight
-          npm pack
+          npm i -g vsce
+          vsce package
 
       ### Create a pre-release
       - name: Create Release
