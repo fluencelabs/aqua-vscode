@@ -81,18 +81,18 @@ jobs:
           npm i -g vsce
           vsce package
 
-      ### Create a pre-release
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ### create release
+      - uses: marvinpinto/action-automatic-releases@latest
         with:
-          tag_name: ${{ env.FINAL_VERSION }}
-          release_name: VSCode syntax highlighting plugin ${{ env.FINAL_VERSION }}
+          # changelog will be automatically generated from the history
+          # between tag env.BASE_VERSION (eg 0.1.0 or 0.2.0, etc)
+          # and the current commit
+          automatic_release_tag: "${{ env.BASE_VERSION }}"
+          title: "Aqua Compiler ${{ env.VERSION }}"
           files: |
             ${{ env.PKG_FILE }}
           body: |
             Version: ${{ env.FINAL_VERSION }}
-          draft: false
+          draft: true
           prerelease: false
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
