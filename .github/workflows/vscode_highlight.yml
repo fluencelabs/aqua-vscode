@@ -75,6 +75,6 @@ jobs:
             Version: ${{ env.FINAL_VERSION }}
           files: |
             ${{ env.PKG_FILE }}
-          draft: false
-          prerelease: true
+          draft: true
+          prerelease: false
 
