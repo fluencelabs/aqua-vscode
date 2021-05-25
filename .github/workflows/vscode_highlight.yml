@@ -5,8 +5,8 @@ on:
     # uncomment to release only on tags starting with 'v'
     # tags:
     #   - "v*"
-    #branches:
-    #  - "main"
+    branches:
+      - "main"
 
   workflow_dispatch:
 
@@ -39,33 +39,19 @@ jobs:
       - name: Get version from npm and increment
         run: |
           cd vscode-highlight
-          # install semver and add it to PATH
-          yarn global add semver
           PATH="$(yarn global bin):$PATH"
+          yarn global add semver
 
-          # sanitize branch name so it can be used as a semver suffix (replace [^0-9a-zA-Z-] with hyphen)
-          SANITIZED_BRANCH="$(echo -n "${{ env.BRANCH_NAME }}" | tr -C '[:alnum:]-' -)"
-          # get package name from package.json
+          # take npm version and increment it
           PKG_NAME="$(cat package.json | jq -r .name)"
-
-          # take all versions from npm and replace single quotes with double quotes
-          NPM_VERSIONS=$(yarn info --silent "$PKG_NAME" versions 2>/dev/null | tr \' \")
-          # take only versions that contain branch name
-          NPM_VERSIONS_FILTERED=$(echo $NPM_VERSIONS | jq -r ".[] | select(contains(\"$SANITIZED_BRANCH\"))")
-          # flatten into a single line
-          NPM_VERSIONS_FLATTENED=$(echo $NPM_VERSIONS_FILTERED | awk '{print}' ORS=' ')
-          # sort versions according to semver, take highest (last)
-          LAST_NPM_VERSION="$(semver -p $(echo $NPM_VERSIONS_FLATTENED) | tail -n1 || true)"
-          # increment prerelease part of the version
-          PRERELEASE_NPM_VERSION="$(semver --increment prerelease --preid "$SANITIZED_BRANCH" "${LAST_NPM_VERSION}" || true)"
-
+          NPM_VERSION="$(yarn info --silent "$PKG_NAME" version || true)"
+          NEXT_NPM_VERSION="$(semver --increment patch "$NPM_VERSION")"
+          
           # take local version
           LOCAL_VERSION="$(cat package.json | jq -r .version)"
-          # set prerelease part on local version
-          LOCAL_PRERELEASE_VERSION="$(semver --increment prerelease --preid "$SANITIZED_BRANCH" "${LOCAL_VERSION}-0")" # added '-0' here to avoid semver erroneously increment patch octet. Any suffix works, '-0' is chosen deliberately.
 
-          # take the highest version
-          MAX_VERSION="$(semver "$LOCAL_PRERELEASE_VERSION" "$PRERELEASE_NPM_VERSION" | tail -n1)"
+          # take maximum of the local and NEXT_NPM versions
+          MAX_VERSION="$(semver "$LOCAL_VERSION" "$NEXT_NPM_VERSION" "0.0.0" | tail -n1)"
 
           # save info to env
           echo "FINAL_VERSION=$MAX_VERSION" | tee -a $GITHUB_ENV
