@@ -40,6 +40,7 @@ jobs:
         run: |
           cd vscode-highlight
           VERSION="1.0.${{ github.run_number }}"
+          PKG_NAME="$(cat package.json | jq -r .name)"
 
           # save info to env
           echo "FINAL_VERSION=$VERSION" | tee -a $GITHUB_ENV
@@ -57,7 +58,8 @@ jobs:
         with:
           node-version: "15"
           registry-url: "https://registry.npmjs.org"
-      - run: |
+      - name: build package
+        run: |
           cd vscode-highlight
           npm i -g vsce
           vsce package
