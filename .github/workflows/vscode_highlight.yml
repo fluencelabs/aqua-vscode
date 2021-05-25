@@ -1,7 +1,14 @@
-name: "build vscode syntax highlight"
+name: "build and release vscode syntax highlight"
 
 on:
   push:
+    # uncomment to release only on tags starting with 'v'
+    # tags:
+    #   - "v*"
+    branches:
+      - "main"
+
+  workflow_dispatch:
 
 jobs:
   npm-publish:
