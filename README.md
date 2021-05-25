@@ -1,10 +1,19 @@
-# Tooling for aqua language
+# aqua syntax highliting
 
-This repository contains a collection of tools for developing with the `aqua` programming language
+Syntax highliting for `aqua` programming language
 
-## Syntax highlining
+## Features
 
-See [vscode-highlight](vscode-highlight)
+Enables syntax highliting for `aqua` programming language
 
+## Installation
 
+In Visual Studio Code go to the extensions pane, click on the ellipsis symbol -> "Install from VSIX"
 
+## Developing
+
+see [vsc-extension-quickstart.md](vsc-extension-quickstart.md)
+
+## License
+
+[Apache 2.0](LICENSE)

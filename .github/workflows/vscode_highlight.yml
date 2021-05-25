@@ -38,19 +38,17 @@ jobs:
 
       - name: Get version from npm and increment
         run: |
-          cd vscode-highlight
           VERSION="1.0.${{ github.run_number }}"
           PKG_NAME="$(cat package.json | jq -r .name)"
 
           # save info to env
           echo "FINAL_VERSION=$VERSION" | tee -a $GITHUB_ENV
           echo "PKG_NAME=$PKG_NAME" | tee -a $GITHUB_ENV
-          echo "PKG_FILE=vscode-highlight/${PKG_NAME}-${VERSION}.vsix" | tee -a $GITHUB_ENV
+          echo "PKG_FILE=${PKG_NAME}-${VERSION}.vsix" | tee -a $GITHUB_ENV
 
       ### Set version
       - name: Set version to ${{ env.FINAL_VERSION }}
         run: |
-          cd vscode-highlight
           yarn version --new-version ${{ env.FINAL_VERSION }} --no-git-tag-version
 
       ### Pack npm package
@@ -60,7 +58,6 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - name: build package
         run: |
-          cd vscode-highlight
           npm i -g vsce
           vsce package
 
