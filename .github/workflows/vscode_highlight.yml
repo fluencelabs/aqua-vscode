@@ -38,6 +38,7 @@ jobs:
 
       - name: Get version from npm and increment
         run: |
+          set -x
           cd vscode-highlight
           PATH="$(yarn global bin):$PATH"
           yarn global add semver
