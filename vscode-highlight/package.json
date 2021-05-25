@@ -3,6 +3,7 @@
   "displayName": "aqua",
   "description": "aqua language support",
   "publisher": "FluenceLabs",
+  "icon": "icon.png",
   "repository": {
     "url": "https://github.com/fluencelabs/aqua-tooling"
   },
