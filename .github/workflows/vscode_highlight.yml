@@ -70,7 +70,7 @@ jobs:
           # save info to env
           echo "FINAL_VERSION=$MAX_VERSION" | tee -a $GITHUB_ENV
           echo "PKG_NAME=$PKG_NAME" | tee -a $GITHUB_ENV
-          echo "PKG_FILE=vscode-highlight/${PKG_NAME}-${FINAL_VERSION}.vsix" | tee -a $GITHUB_ENV
+          echo "PKG_FILE=vscode-highlight/${PKG_NAME}-${MAX_VERSION}.vsix" | tee -a $GITHUB_ENV
 
       ### Set version
       - name: Set version to ${{ env.FINAL_VERSION }}
@@ -94,7 +94,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: VERSION ${{ env.VERSION }}
+          release_name: VERSION ${{ env.FINAL_VERSION }}
           body_path: |
             ${{ env.PKG_FILE }}
           draft: true
