@@ -87,12 +87,10 @@ jobs:
           # changelog will be automatically generated from the history
           # between tag env.BASE_VERSION (eg 0.1.0 or 0.2.0, etc)
           # and the current commit
-          automatic_release_tag: "${{ env.BASE_VERSION }}"
-          title: "Aqua Compiler ${{ env.VERSION }}"
+          #automatic_release_tag: "${{ env.BASE_VERSION }}"
+          title: "Syntax highlight plugin for Visual Studio Code ${{ env.VERSION }}"
           files: |
             ${{ env.PKG_FILE }}
-          body: |
-            Version: ${{ env.FINAL_VERSION }}
           draft: true
           prerelease: false
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
