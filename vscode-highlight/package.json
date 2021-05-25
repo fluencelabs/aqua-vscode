@@ -2,9 +2,13 @@
   "name": "aqua-syntax-highlight",
   "displayName": "aqua",
   "description": "aqua language support",
+  "publisher": "FluenceLabs",
+  "repository": {
+    "url": "https://github.com/fluencelabs/aqua-tooling"
+  },
   "version": "1.0.0",
   "engines": {
-    "vscode": "^1.56.0"
+    "vscode": "^1.50.0"
   },
   "categories": [
     "Programming Languages"
