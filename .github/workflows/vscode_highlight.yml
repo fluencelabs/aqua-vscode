@@ -93,7 +93,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ env.FINAL_VERSION }}
           name: Visual Studio Code syntax highlight ${{ env.FINAL_VERSION }}
           body: |
             Version: ${{ env.FINAL_VERSION }}
@@ -101,3 +101,4 @@ jobs:
             ${{ env.PKG_FILE }}
           draft: false
           prerelease: true
+
