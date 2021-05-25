@@ -1,7 +1,14 @@
-name: "build vscode syntax highlight"
+name: "build and release vscode syntax highlight"
 
 on:
   push:
+    # uncomment to release only on tags starting with 'v'
+    # tags:
+    #   - "v*"
+    #branches:
+    #  - "main"
+
+  workflow_dispatch:
 
 jobs:
   npm-publish:
@@ -63,7 +70,7 @@ jobs:
           # save info to env
           echo "FINAL_VERSION=$MAX_VERSION" | tee -a $GITHUB_ENV
           echo "PKG_NAME=$PKG_NAME" | tee -a $GITHUB_ENV
-          echo "PKG_FILE=vscode-highlight/${PKG_NAME}-${FINAL_VERSION}.tgz" | tee -a $GITHUB_ENV
+          echo "PKG_FILE=vscode-highlight/${PKG_NAME}-${MAX_VERSION}.vsix" | tee -a $GITHUB_ENV
 
       ### Set version
       - name: Set version to ${{ env.FINAL_VERSION }}
@@ -78,20 +85,20 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - run: |
           cd vscode-highlight
-          npm pack
+          npm i -g vsce
+          vsce package
 
-      ### Create a pre-release
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      ### create release
+      - uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.FINAL_VERSION }}
-          release_name: VSCode syntax highlighting plugin ${{ env.FINAL_VERSION }}
-          files: |
-            ${{ env.PKG_FILE }}
+          name: Visual Studio Code syntax highlight ${{ env.FINAL_VERSION }}
           body: |
             Version: ${{ env.FINAL_VERSION }}
+          files: |
+            ${{ env.PKG_FILE }}
           draft: false
-          prerelease: false
+          prerelease: true
+
