@@ -38,26 +38,13 @@ jobs:
 
       - name: Get version from npm and increment
         run: |
-          set -x
           cd vscode-highlight
-          PATH="$(yarn global bin):$PATH"
-          yarn global add semver
-
-          # take npm version and increment it
-          PKG_NAME="$(cat package.json | jq -r .name)"
-          NPM_VERSION="$(yarn info --silent "$PKG_NAME" version || true)"
-          NEXT_NPM_VERSION="$(semver --increment patch "$NPM_VERSION")"
-          
-          # take local version
-          LOCAL_VERSION="$(cat package.json | jq -r .version)"
-
-          # take maximum of the local and NEXT_NPM versions
-          MAX_VERSION="$(semver "$LOCAL_VERSION" "$NEXT_NPM_VERSION" "0.0.0" | tail -n1)"
+          VERSION="1.0.{{ github.run_number }}"
 
           # save info to env
-          echo "FINAL_VERSION=$MAX_VERSION" | tee -a $GITHUB_ENV
+          echo "FINAL_VERSION=$VERSION" | tee -a $GITHUB_ENV
           echo "PKG_NAME=$PKG_NAME" | tee -a $GITHUB_ENV
-          echo "PKG_FILE=vscode-highlight/${PKG_NAME}-${MAX_VERSION}.vsix" | tee -a $GITHUB_ENV
+          echo "PKG_FILE=vscode-highlight/${PKG_NAME}-${VERSION}.vsix" | tee -a $GITHUB_ENV
 
       ### Set version
       - name: Set version to ${{ env.FINAL_VERSION }}
