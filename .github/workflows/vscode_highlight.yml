@@ -51,8 +51,10 @@ jobs:
         run: |
           yarn version --new-version ${{ env.FINAL_VERSION }} --no-git-tag-version
 
-      ### Pack npm package
+      ### Pack vsix package
       - uses: actions/setup-node@v1
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
         with:
           node-version: "15"
           registry-url: "https://registry.npmjs.org"
@@ -60,6 +62,7 @@ jobs:
         run: |
           npm i -g vsce
           vsce package
+          vsce publish
 
       ### create release
       - uses: softprops/action-gh-release@v1
