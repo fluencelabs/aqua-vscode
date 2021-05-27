@@ -2,13 +2,17 @@
 
 Syntax highliting for `aqua` programming language
 
+## What is aqua?
+
+Aqua is a new-gen language for distributed systems.
+
+Aqua programs are executed on many peers, sequentially or in parallel, forming a single-use coordination network.
+
+Aqua's runtime is heterogeneous: it includes browsers, servers, devices, all involved in solving a single task. Therefore, Aqua scripts are compiled into several targets at once, with AIR and Typescript as a default.
+
 ## Features
 
 Enables syntax highliting for `aqua` programming language
-
-## Installation
-
-In Visual Studio Code go to the extensions pane, click on the ellipsis symbol -> "Install from VSIX"
 
 ## Developing
 
