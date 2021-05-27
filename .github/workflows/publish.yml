@@ -5,8 +5,8 @@ on:
     # uncomment to release only on tags starting with 'v'
     # tags:
     #   - "v*"
-    #branches:
-    #  - "main"
+    branches:
+      - "main"
 
   workflow_dispatch:
 
@@ -53,8 +53,6 @@ jobs:
 
       ### Pack vsix package
       - uses: actions/setup-node@v1
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
         with:
           node-version: "15"
           registry-url: "https://registry.npmjs.org"
@@ -62,7 +60,7 @@ jobs:
         run: |
           npm i -g vsce
           vsce package
-          vsce publish
+          vsce publish -p ${{ secrets.VSCE_PAT }}
 
       ### create release
       - uses: softprops/action-gh-release@v1
