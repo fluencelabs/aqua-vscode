@@ -60,9 +60,9 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - name: build package
         run: |
-          npm i -g vsce --yarn
+          npm i -g vsce
           vsce package
-          vsce publish
+          vsce publish --yarn
 
       ### create release
       - uses: softprops/action-gh-release@v1
