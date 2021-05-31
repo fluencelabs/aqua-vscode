@@ -19,20 +19,44 @@
     "keywords": {
       "patterns": [
         {
-          "name": "keyword.control.aqua",
-          "match": "\\b(if|else|otherwise|use|try|catch|on|via|for|par|use|<-)\\b"
+          "name": "keyword.control.flow.aqua",
+          "match": "\\b(if|else|otherwise|try|catch|for|use|<-)\\b"
+        },
+        {
+          "name": "keyword.control.topology.aqua",
+          "match": "\\b(on|par|via|use)\\b"
         },
         {
           "name": "keyword.operator.logical.aqua",
           "match": "\\b(eqs|neq)\\b"
         },
         {
-          "name": "keyword.declaration.aqua",
-          "match": "\\b(func|service|data|alias)\\b"
+          "name": "storage.type.function.aqua",
+          "match": "\\b(func)\\b"
+        },
+        {
+          "name": "storage.type.aqua",
+          "match": "\\b(service|alias)\\b"
+        },
+        {
+          "name": "keyword.type.struct.aqua",
+          "match": "\\b(data)\\b"
         },
         {
           "name": "keyword.control.import",
           "match": "\\b(import)\\b"
+        },
+        {
+          "name": "constant.language.boolean.aqua",
+          "match": "\\b(true|false)\\b"
+        },
+        {
+          "name": "constant.language.other.aqua",
+          "match": "%init_peer_id%"
+        },
+        {
+          "name": "constant.numeric.aqua",
+          "match": "\\b\\d+\\b"
         }
       ]
     },
@@ -57,6 +81,22 @@
         {
           "name": "storage.type.aqua",
           "match": "\\b(string|bool|u8|u16|u32|u64|s8|s16|s32|s64|f32|f64)\\b"
+        },
+        {
+          "name": "entity.name.type.struct.aqua",
+          "match": "\\b[A-Z][A-Za-z0-9_]+(?=:)"
+        },
+        {
+          "name": "entity.name.type.interface.aqua",
+          "match": "\\b[A-Z][A-Za-z0-9_]+(?=\\()"
+        },
+        {
+          "name": "support.class.aqua",
+          "match": "\\b[A-Z][A-Za-z0-9_]+(?=\\.)"
+        },
+        {
+          "name": "support.variable.method.aqua",
+          "match": "(?<=\\.)[a-z0-9_]+(?=\\()"
         }
       ]
     }
