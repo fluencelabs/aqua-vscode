@@ -23,6 +23,10 @@
           "match": "\\b(try|catch|par|if|else|otherwise|for)\\b"
         },
         {
+          "name": "keyword.control.other.aqua",
+          "match": "(<-|->|\\[\\]|\\*|\\?\\=|\\?)"
+        },
+        {
           "name": "keyword.topology.aqua",
           "match": "\\b(on|via|use|func|service|data|alias)\\b"
         },
@@ -67,12 +71,16 @@
     "semantics": {
       "patterns": [
         {
-          "name": "storage.type.aqua",
+          "name": "support.type.primitive.aqua",
           "match": "\\b(string|bool|u8|u16|u32|u64|s8|s16|s32|s64|f32|f64)\\b"
         },
         {
           "name": "entity.name.type.struct.aqua",
           "match": "\\b[A-Z][A-Za-z0-9_]+(?=:)"
+        },
+        {
+          "name": "support.class.aqua",
+          "match": "\\b[A-Z][A-Za-z0-9_]+(?=\\s)"
         },
         {
           "name": "support.variable.method.aqua",
