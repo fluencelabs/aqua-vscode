@@ -75,16 +75,12 @@
           "match": "\\b[A-Z][A-Za-z0-9_]+(?=:)"
         },
         {
-          "name": "entity.name.type.interface.aqua",
-          "match": "\\b[A-Z][A-Za-z0-9_]+(?=\\()"
-        },
-        {
-          "name": "support.class.aqua",
-          "match": "\\b[A-Z][A-Za-z0-9_]+(?=\\.)"
-        },
-        {
           "name": "support.variable.method.aqua",
           "match": "(?<=\\.)[a-z0-9_]+(?=\\()"
+        },
+        {
+          "name": "support.service.aqua",
+          "match": "\\b[A-Z][A-Za-z0-9_]+(?=[\\(\\.])"
         }
       ]
     }
