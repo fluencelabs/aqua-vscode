@@ -6,6 +6,9 @@
       "include": "#keywords"
     },
     {
+      "include": "#constants"
+    },
+    {
       "include": "#strings"
     },
     {
@@ -37,11 +40,11 @@
         {
           "name": "keyword.control.import",
           "match": "\\b(import)\\b"
-        },
-        {
-          "name": "constant.language.boolean.aqua",
-          "match": "\\b(true|false)\\b"
-        },
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
         {
           "name": "constant.language.other.aqua",
           "match": "%init_peer_id%"
@@ -49,6 +52,10 @@
         {
           "name": "constant.numeric.aqua",
           "match": "\\b\\d+\\b"
+        },
+        {
+          "name": "constant.language.boolean.aqua",
+          "match": "\\b(true|false)\\b"
         }
       ]
     },
@@ -75,18 +82,22 @@
           "match": "\\b(string|bool|u8|u16|u32|u64|s8|s16|s32|s64|f32|f64)\\b"
         },
         {
+          "//": "Defines tokens for data types in Aqua (declaration). Tokens are expected to have colon after them (`data Something:`)",
           "name": "entity.name.type.struct.aqua",
           "match": "\\b[A-Z][A-Za-z0-9_]+(?=:)"
         },
         {
+          "//": "Defines tokens for data types in Aqua (usage). Data types in aqua start with a captial letter and are followed by any space char.",
           "name": "support.class.aqua",
           "match": "\\b[A-Z][A-Za-z0-9_]+(?=\\s)"
         },
         {
+          "//": "Defines tokens for service methods calls. Token is located between dot and open bracket",
           "name": "support.variable.method.aqua",
           "match": "(?<=\\.)[a-z0-9_]+(?=\\()"
         },
         {
+          "//": "Defines tokens for service names both in declaration and in usage. Token starts with a capital letter and is followed by either dot (service usage) or open bracket (service declaratiokn)",
           "name": "support.service.aqua",
           "match": "\\b[A-Z][A-Za-z0-9_]+(?=[\\(\\.])"
         }
