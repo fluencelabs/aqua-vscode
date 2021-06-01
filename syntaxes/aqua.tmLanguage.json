@@ -20,27 +20,15 @@
       "patterns": [
         {
           "name": "keyword.control.flow.aqua",
-          "match": "\\b(if|else|otherwise|try|catch|for|use|<-)\\b"
+          "match": "\\b(try|catch|par|if|else|otherwise|for)\\b"
         },
         {
-          "name": "keyword.control.topology.aqua",
-          "match": "\\b(on|par|via|use)\\b"
+          "name": "keyword.topology.aqua",
+          "match": "\\b(on|via|use|func|service|data|alias)\\b"
         },
         {
           "name": "keyword.operator.logical.aqua",
           "match": "\\b(eqs|neq)\\b"
-        },
-        {
-          "name": "storage.type.function.aqua",
-          "match": "\\b(func)\\b"
-        },
-        {
-          "name": "storage.type.aqua",
-          "match": "\\b(service|alias)\\b"
-        },
-        {
-          "name": "keyword.type.struct.aqua",
-          "match": "\\b(data)\\b"
         },
         {
           "name": "keyword.control.import",
