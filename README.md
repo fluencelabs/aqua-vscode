@@ -1,6 +1,34 @@
-# aqua syntax highliting
+# aqua syntax highlighting
 
-Syntax highliting for `aqua` programming language
+Syntax highlighting for `aqua` programming language
+
+## Installation
+
+1. Install the extension
+2. Configure colors for aqua-specific tokens (see below)
+
+Add the following lines to the [settings.json](https://code.visualstudio.com/docs/getstarted/settings) file. Feel free to choose colors according to you favorite theme. In the example below services will be highlighted as green and all the keywords which affect the topology will be highlighted as red
+
+```json
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+            {
+                "scope": "keyword.topology.aqua",
+                "settings": {
+                    "foreground": "#FF0000",
+                }
+            },
+            {
+                "scope": "support.service.aqua",
+                "settings": {
+                    "foreground": "#00FF00",
+                }
+            }
+        ]
+    }
+```
+
+
 
 ## What is aqua?
 
@@ -12,7 +40,7 @@ Aqua's runtime is heterogeneous: it includes browsers, servers, devices, all inv
 
 ## Features
 
-Enables syntax highliting for `aqua` programming language
+Enables syntax highlighting for `aqua` programming language
 
 ## Developing
 
