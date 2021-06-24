@@ -4,8 +4,9 @@ Syntax highlighting for `aqua` programming language
 
 ## Installation
 
-1. Install the extension
-2. Configure colors for aqua-specific tokens (see below)
+1. Install [the extension](https://marketplace.visualstudio.com/items?itemName=FluenceLabs.aqua-syntax-highlight)
+2. Install compiler `npm install --global @fluencelabs/aqua-cli`
+3. Configure colors for aqua-specific tokens (see below)
 
 Add the following lines to the [settings.json](https://code.visualstudio.com/docs/getstarted/settings) file. Feel free to choose colors according to you favorite theme. In the example below services will be highlighted as green and all the keywords which affect the topology will be highlighted as red
 
