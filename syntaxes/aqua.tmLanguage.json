@@ -23,7 +23,7 @@
       "patterns": [
         {
           "name": "keyword.control.flow.aqua",
-          "match": "\\b(try|catch|par|if|else|otherwise|for)\\b"
+          "match": "\\b(try|catch|par|if|else|otherwise|for|co)\\b"
         },
         {
           "name": "keyword.control.other.aqua",
