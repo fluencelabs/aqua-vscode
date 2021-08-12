@@ -27,7 +27,7 @@
         },
         {
           "name": "keyword.control.other.aqua",
-          "match": "(<-|->|\\[\\]|\\*|\\?\\=|\\?)"
+          "match": "(<<-|<-|->|\\[\\]|\\*|\\?\\=|\\?)"
         },
         {
           "name": "keyword.topology.aqua",
@@ -56,6 +56,10 @@
         {
           "name": "constant.language.boolean.aqua",
           "match": "\\b(true|false)\\b"
+        },
+        {
+          "name": "constant.language.option.nil.aqua",
+          "match": "nil"
         }
       ]
     },
