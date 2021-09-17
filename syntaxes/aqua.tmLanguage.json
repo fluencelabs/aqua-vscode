@@ -31,7 +31,7 @@
         },
         {
           "name": "keyword.topology.aqua",
-          "match": "\\b(on|via|use|func|service|data|alias)\\b"
+          "match": "\\b(on|via|use|func|service|data|alias|const)\\b"
         },
         {
           "name": "keyword.operator.logical.aqua",
@@ -39,7 +39,7 @@
         },
         {
           "name": "keyword.control.import",
-          "match": "\\b(import)\\b"
+          "match": "\\b(import|module|export|declares|from|as)\\b"
         }
       ]
     },
@@ -98,7 +98,12 @@
         {
           "//": "Defines tokens for service methods calls. Token is located between dot and open bracket",
           "name": "support.variable.method.aqua",
-          "match": "(?<=\\.)[a-z0-9_]+(?=\\()"
+          "match": "(?<=\\.)[a-z][a-zA-Z0-9_]+(?=\\()"
+        },
+        {
+          "//": "Defines tokens for constants used anywhere in code",
+          "name": "support.type.constant.aqua",
+          "match": "\\b[A-Z][A-Z0-9_]*\\b"
         },
         {
           "//": "Defines tokens for service names both in declaration and in usage. Token starts with a capital letter and is followed by either dot (service usage) or open bracket (service declaratiokn)",
