@@ -91,6 +91,11 @@
     "semantics": {
       "patterns": [
         {
+          "//": "Matches type name defined with alias clause",
+          "name": "entity.name.type",
+          "match": "(?<=alias\\s*)[A-Z]\\w*(?=\\s*:)"
+        },
+        {
           "//": "Matches type specifier after function arguments and variables",
           "name": "support.type.specifier",
           "match": "(?<=alias.*?:.*?,*\\s**[\\[\\]\\*\\?]*)[A-Z][A-Za-z0-9_]*"
@@ -106,22 +111,22 @@
           "match": "\\b[A-Z][A-Za-z0-9_]+(?=\\s)"
         },
         {
-          "//": "Defines tokens for data and service definitions ('data XXX:' or 'service YYY:')",
+          "//": "Defines tokens for data and service definitions ('data XXX:')",
           "name": "entity.name.type.data.aqua",
           "match": "\\b(?<=(data)\\s+)[A-Z][A-Za-z0-9_]+(?=:)\\b"
         },
         {
-          "//": "Defines tokens for data and service definitions ('data XXX:' or 'service YYY:')",
+          "//": "Defines tokens for data and service definitions ('service YYY:')",
           "name": "entity.name.type.service.aqua",
           "match": "\\b(?<=(service)\\s+)[A-Z][A-Za-z0-9_]+(?=(\\(\"\\w*\"\\))*:)\\b"
         },
         {
-          "//": "Defines tokens for service methods calls. Token is located between dot and open bracket",
-          "name": "support.variable.method.aqua",
+          "//": "Metod name in 'Srv.method(args)' call",
+          "name": "support.function.method.call.aqua",
           "match": "(?<=\\.)[a-z][a-zA-Z0-9_]+(?=\\()"
         },
         {
-          "//": "Defines tokens for service names both in declaration and in usage. Token starts with a capital letter and is followed by either dot (service usage) or open bracket (service declaratiokn)",
+          "//": "Service name in 'Srv.method(args)' call",
           "name": "support.type.service.aqua",
           "match": "\\b[A-Z][A-Za-z0-9_]*(?=\\..*?\\()"
         },
