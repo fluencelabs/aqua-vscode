@@ -46,6 +46,8 @@ Enables syntax highlighting for `aqua` programming language
 
 see [vsc-extension-quickstart.md](vsc-extension-quickstart.md)
 
+NOTE: if you're going to change pattern names, check out the naming rules in [TextMate Grammar doc](https://macromates.com/manual/en/language_grammars). You have to use predefined pattern naming scheme, or the syntax won't be highlighted.
+
 ## License
 
 [Apache 2.0](LICENSE)
