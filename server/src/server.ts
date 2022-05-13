@@ -1,8 +1,6 @@
 import {
 	createConnection,
 	TextDocuments,
-	Diagnostic,
-	DiagnosticSeverity,
 	ProposedFeatures,
 	InitializeParams,
 	TextDocumentSyncKind,
@@ -13,11 +11,10 @@ import {
 	WorkspaceFolder
 } from "vscode-languageserver-protocol"
 
-import {AquaLSP} from "../js/compiler";
-
 import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
+import {compileAqua} from "./validation";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -30,7 +27,7 @@ let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let folders: WorkspaceFolder[] = []
 
-interface Settings {
+export interface Settings {
 	imports: string[];
 }
 
@@ -53,7 +50,7 @@ connection.onDidChangeConfiguration(change => {
 
 
 	// Revalidate all open text documents
-	documents.all().forEach(validateTextDocument);
+	documents.all().forEach(validateDocument);
 });
 
 function getDocumentSettings(resource: string): Thenable<Settings> {
@@ -111,70 +108,25 @@ connection.onInitialize((params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
-	connection.workspace.onDidChangeWorkspaceFolders(_event => {
-		connection.console.log('Workspace folder change event received.');
+	connection.workspace.onDidChangeWorkspaceFolders(event => {
+		folders = folders.concat(event.added)
+		folders = folders.filter((f) => !event.removed.includes(f));
 	});
 
 });
 
 documents.onDidSave(async change => {
-	await validateTextDocument(change.document);
+	await validateDocument(change.document);
 });
 
 documents.onDidOpen(async change => {
-	await validateTextDocument(change.document);
+	await validateDocument(change.document);
 });
 
-async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-
+async function validateDocument(textDocument: TextDocument): Promise<void> {
 	const settings = await getDocumentSettings(textDocument.uri);
 
-	const uri = textDocument.uri.replace("file://", "")
-
-	let imports: string[] = []
-
-	// add all workspace folders to imports
-	imports = imports.concat(folders.map((f) => f.uri.replace("file://", "")))
-	imports = imports.concat(folders.map((f) => f.uri.replace("file://", "")) + "/node_modules")
-	imports = imports.concat(settings.imports.map((s) => s.replace("file://", "")))
-	imports = imports.concat(settings.imports.map((s) => s.replace("file://", "")) + "/node_modules")
-
-	if (require.main) {
-		imports = imports.concat(require.main.paths)
-	}
-
-	const errors = await AquaLSP.compile(uri, imports)
-
-	const diagnostics: Diagnostic[] = [];
-
-	if (errors) {
-		// Add all errors to Diagnostic
-		errors.forEach((err) => {
-			const diagnostic: Diagnostic = {
-				severity: DiagnosticSeverity.Error,
-				range: {
-					start: textDocument.positionAt(err.start),
-					end: textDocument.positionAt(err.end)
-				},
-				message: err.message
-			};
-
-			if (err.location) {
-				diagnostic.relatedInformation = [
-					{
-						location: {
-							uri: err.location,
-							range: Object.assign({}, diagnostic.range)
-						},
-						message: 'Compilation error'
-					}
-				];
-			}
-
-
-			diagnostics.push(diagnostic);
-		})
-	}
+	const diagnostics = await compileAqua(settings, textDocument, folders);
 
 	// Send the computed diagnostics to VSCode.
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
