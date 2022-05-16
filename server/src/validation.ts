@@ -1,8 +1,8 @@
-import {TextDocument} from "vscode-languageserver-textdocument";
+import type {TextDocument} from "vscode-languageserver-textdocument";
 import {AquaLSP} from "@fluencelabs/aqua-language-server-api/aqua-lsp-api";
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver/node";
-import {Settings} from "./server";
-import {WorkspaceFolder} from "vscode-languageserver-protocol";
+import type {Settings} from "./server";
+import type {WorkspaceFolder} from "vscode-languageserver-protocol";
 
 export async function compileAqua(settings: Settings, textDocument: TextDocument, folders: WorkspaceFolder[]): Promise<Diagnostic[]> {
 

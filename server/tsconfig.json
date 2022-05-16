@@ -1,8 +1,7 @@
 {
 	"allowJs": true,
 	"compilerOptions": {
-		"target": "es2020",
-		"lib": ["es2020"],
+		"target": "ES5",
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"sourceMap": true,
@@ -11,5 +10,6 @@
 		"rootDir": "src"
 	},
 	"include": ["src"],
-	"exclude": ["node_modules"]
+	"exclude": ["node_modules"],
+	"extends": "@tsconfig/node16-strictest/tsconfig.json"
 }
