@@ -1,26 +1,30 @@
 {
-	"allowJs": true,
-	"declaration": true,
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "ES5",
-		"outDir": "out",
-		"rootDir": "src",
-		"sourceMap": true
-	},
-	"include": [
-		"src"
-	],
-	"types": [
-		"node"
-	],
-	"exclude": [
-		"node_modules",
-		".vscode-test"
-	],
-	"references": [
-		{ "path": "./client" },
-		{ "path": "./server" }
-	],
-	"extends": "@tsconfig/node16-strictest/tsconfig.json"
+  "allowJs": true,
+  "declaration": true,
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES5",
+    "outDir": "out",
+    "rootDir": "src",
+    "sourceMap": true
+  },
+  "include": [
+    "src"
+  ],
+  "types": [
+    "node"
+  ],
+  "exclude": [
+    "node_modules",
+    ".vscode-test"
+  ],
+  "references": [
+    {
+      "path": "./client"
+    },
+    {
+      "path": "./server"
+    }
+  ],
+  "extends": "@tsconfig/node16-strictest/tsconfig.json"
 }
