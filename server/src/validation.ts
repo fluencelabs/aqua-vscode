@@ -1,5 +1,5 @@
 import type { TextDocument } from 'vscode-languageserver-textdocument';
-import { AquaLSP } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
+import {AquaLSP, ErrorInfo, TokenLink} from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver/node';
 import type { Settings } from './server';
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
@@ -8,7 +8,7 @@ export async function compileAqua(
     settings: Settings,
     textDocument: TextDocument,
     folders: WorkspaceFolder[],
-): Promise<Diagnostic[]> {
+): Promise<[Diagnostic[], TokenLink[]]> {
     const uri = textDocument.uri.replace('file://', '');
 
     let imports: string[] = [];
@@ -23,13 +23,13 @@ export async function compileAqua(
     }
 
     // compile aqua and get possible errors
-    const errors = await AquaLSP.compile(uri, imports);
+    const result = await AquaLSP.compile(uri, imports);
 
     const diagnostics: Diagnostic[] = [];
 
-    if (errors) {
+    if (result.errors) {
         // Add all errors to Diagnostic
-        errors.forEach((err) => {
+        result.errors.forEach((err: ErrorInfo) => {
             const diagnostic: Diagnostic = {
                 severity: DiagnosticSeverity.Error,
                 range: {
@@ -55,5 +55,5 @@ export async function compileAqua(
         });
     }
 
-    return diagnostics;
+    return [diagnostics, result.locations];
 }
