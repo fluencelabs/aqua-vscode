@@ -1,5 +1,5 @@
 import type { TextDocument } from 'vscode-languageserver-textdocument';
-import {AquaLSP, ErrorInfo, TokenLink} from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
+import { AquaLSP, ErrorInfo, TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver/node';
 import type { Settings } from './server';
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
