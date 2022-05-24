@@ -12,7 +12,7 @@ import type {WorkspaceFolder} from 'vscode-languageserver-protocol';
 import {TextDocument} from 'vscode-languageserver-textdocument';
 import {compileAqua} from './validation';
 import type {DefinitionParams, Location} from "vscode-languageserver";
-import type {TokenLink} from "../../../aqua/language-server-npm/aqua-lsp-api";
+import type {TokenLink} from "@fluencelabs/aqua-language-server-api/aqua-lsp-api";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
