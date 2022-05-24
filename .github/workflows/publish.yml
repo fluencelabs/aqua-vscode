@@ -58,6 +58,7 @@ jobs:
                   registry-url: 'https://registry.npmjs.org'
             - name: build package
               run: |
+                  npm i
                   npm i -g vsce
                   vsce package
                   vsce publish -p ${{ secrets.VSCE_PAT }}
