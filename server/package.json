@@ -11,10 +11,10 @@
         "url": "https://github.com/fluencelabs/aqua"
     },
     "dependencies": {
-        "vscode-languageserver": "^7.0.0",
-        "vscode-languageserver-textdocument": "^1.0.4",
+        "@fluencelabs/aqua-language-server-api": "0.7.2-314",
         "global-dirs": "^3.0.0",
-        "@fluencelabs/aqua-language-server-api": "0.0.4"
+        "vscode-languageserver": "^7.0.0",
+        "vscode-languageserver-textdocument": "^1.0.4"
     },
     "scripts": {
         "get-root": "npm root --globall"

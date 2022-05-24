@@ -11,6 +11,8 @@ import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { compileAqua } from './validation';
+import type { DefinitionParams, Location } from 'vscode-languageserver';
+import type { TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -27,6 +29,12 @@ export interface Settings {
     imports: string[];
 }
 
+function searchDefinition(offset: number, name: string, locations: TokenLink[]): TokenLink | undefined {
+    return locations.find((token) => {
+        return token.current.name == name && token.current.start <= offset && token.current.end >= offset;
+    });
+}
+
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
@@ -35,6 +43,36 @@ let globalSettings: Settings = defaultSettings;
 
 // Cache the settings of all open documents
 const documentSettings: Map<string, Thenable<Settings>> = new Map();
+
+let currentLocations: TokenLink[] = [];
+
+async function onDefinition({ textDocument, position }: DefinitionParams): Promise<Location[]> {
+    const doc = documents.get(textDocument.uri);
+    if (doc) {
+        const offset = doc.offsetAt(position);
+        const token = searchDefinition(offset, doc.uri.replace('file://', ''), currentLocations);
+        connection.console.log('find token: ' + JSON.stringify(token));
+        if (token) {
+            const definition = token.definition;
+            const defDoc = documents.get('file://' + definition.name);
+            if (defDoc) {
+                return [
+                    {
+                        uri: defDoc.uri,
+                        range: {
+                            start: defDoc.positionAt(definition.start),
+                            end: defDoc.positionAt(definition.end),
+                        },
+                    },
+                ];
+            }
+        }
+    }
+
+    return [];
+}
+
+connection.onDefinition(onDefinition);
 
 connection.onDidChangeConfiguration((change) => {
     connection.console.log(change.settings);
@@ -78,11 +116,8 @@ connection.onInitialize((params: InitializeParams) => {
 
     const result: InitializeResult = {
         capabilities: {
-            textDocumentSync: TextDocumentSyncKind.Incremental,
-            // Tell the client that this server supports code completion.
-            completionProvider: {
-                resolveProvider: true,
-            },
+            textDocumentSync: TextDocumentSyncKind.Full,
+            definitionProvider: true,
         },
     };
     if (hasWorkspaceFolderCapability) {
@@ -113,7 +148,9 @@ documents.onDidOpen(async (change) => {
 async function validateDocument(textDocument: TextDocument): Promise<void> {
     const settings = await getDocumentSettings(textDocument.uri);
 
-    const diagnostics = await compileAqua(settings, textDocument, folders);
+    const [diagnostics, locations] = await compileAqua(settings, textDocument, folders);
+
+    currentLocations = locations;
 
     // Send the computed diagnostics to VSCode.
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
