@@ -1,6 +1,7 @@
 {
-    "name": "aqua-language-server",
-    "description": "An aqua language server",
+    "name": "aqua",
+    "displayName": "Aqua",
+    "description": "Aqua language support powered by the Aqua Language Server",
     "author": "Fluence Labs",
     "version": "1.1.0",
     "publisher": "FluenceLabs",
@@ -19,7 +20,7 @@
         "vscode": "^1.50.0"
     },
     "activationEvents": [
-        "onLanguage:plaintext"
+        "onLanguage:aqua"
     ],
     "main": "./client/out/extension",
     "contributes": {
