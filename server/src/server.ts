@@ -44,27 +44,31 @@ let globalSettings: Settings = defaultSettings;
 // Cache the settings of all open documents
 const documentSettings: Map<string, Thenable<Settings>> = new Map();
 
-let currentLocations: TokenLink[] = [];
+const allLocations: Map<string, TokenLink[]> = new Map();
 
 async function onDefinition({ textDocument, position }: DefinitionParams): Promise<Location[]> {
+    connection.console.log('onDefinition event');
     const doc = documents.get(textDocument.uri);
     if (doc) {
         const offset = doc.offsetAt(position);
-        const token = searchDefinition(offset, doc.uri.replace('file://', ''), currentLocations);
-        connection.console.log('find token: ' + JSON.stringify(token));
-        if (token) {
-            const definition = token.definition;
-            const defDoc = documents.get('file://' + definition.name);
-            if (defDoc) {
-                return [
-                    {
-                        uri: defDoc.uri,
-                        range: {
-                            start: defDoc.positionAt(definition.start),
-                            end: defDoc.positionAt(definition.end),
+        const currentLocations = allLocations.get(textDocument.uri);
+        if (currentLocations) {
+            const token = searchDefinition(offset, doc.uri.replace('file://', ''), currentLocations);
+            connection.console.log('find token: ' + JSON.stringify(token));
+            if (token) {
+                const definition = token.definition;
+                const defDoc = documents.get('file://' + definition.name);
+                if (defDoc) {
+                    return [
+                        {
+                            uri: defDoc.uri,
+                            range: {
+                                start: defDoc.positionAt(definition.start),
+                                end: defDoc.positionAt(definition.end),
+                            },
                         },
-                    },
-                ];
+                    ];
+                }
             }
         }
     }
@@ -104,6 +108,7 @@ documents.onDidClose((e) => {
 });
 
 connection.onInitialize((params: InitializeParams) => {
+    connection.console.log('onInitialize event');
     const capabilities = params.capabilities;
 
     hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration);
@@ -131,6 +136,7 @@ connection.onInitialize((params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
+    connection.console.log('onInitialized event');
     connection.workspace.onDidChangeWorkspaceFolders((event) => {
         folders = folders.concat(event.added);
         folders = folders.filter((f) => !event.removed.includes(f));
@@ -138,10 +144,12 @@ connection.onInitialized(() => {
 });
 
 documents.onDidSave(async (change) => {
+    connection.console.log('onDidSave event');
     await validateDocument(change.document);
 });
 
 documents.onDidOpen(async (change) => {
+    connection.console.log('onDidOpen event');
     await validateDocument(change.document);
 });
 
@@ -150,7 +158,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     const [diagnostics, locations] = await compileAqua(settings, textDocument, folders);
 
-    currentLocations = locations;
+    allLocations.set(textDocument.uri, locations);
 
     // Send the computed diagnostics to VSCode.
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
