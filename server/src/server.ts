@@ -9,7 +9,7 @@ import {
 
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
 
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import { Position, TextDocument } from 'vscode-languageserver-textdocument';
 import { compileAqua } from './validation';
 import type { DefinitionParams, Location } from 'vscode-languageserver';
 import type { TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
@@ -29,9 +29,15 @@ export interface Settings {
     imports: string[];
 }
 
-function searchDefinition(offset: number, name: string, locations: TokenLink[]): TokenLink | undefined {
+function searchDefinition(position: Position, name: string, locations: TokenLink[]): TokenLink | undefined {
     return locations.find((token) => {
-        return token.current.name == name && token.current.start <= offset && token.current.end >= offset;
+        return (
+            token.current.name == name &&
+            token.current.startLine <= position.line &&
+            token.current.startCol <= position.character &&
+            token.current.endLine >= position.line &&
+            token.current.endCol >= position.character
+        );
     });
 }
 
@@ -49,26 +55,30 @@ const allLocations: Map<string, TokenLink[]> = new Map();
 async function onDefinition({ textDocument, position }: DefinitionParams): Promise<Location[]> {
     connection.console.log('onDefinition event');
     const doc = documents.get(textDocument.uri);
+
     if (doc) {
-        const offset = doc.offsetAt(position);
         const currentLocations = allLocations.get(textDocument.uri);
         if (currentLocations) {
-            const token = searchDefinition(offset, doc.uri.replace('file://', ''), currentLocations);
+            const token = searchDefinition(position, doc.uri.replace('file://', ''), currentLocations);
             connection.console.log('find token: ' + JSON.stringify(token));
             if (token) {
                 const definition = token.definition;
-                const defDoc = documents.get('file://' + definition.name);
-                if (defDoc) {
-                    return [
-                        {
-                            uri: defDoc.uri,
-                            range: {
-                                start: defDoc.positionAt(definition.start),
-                                end: defDoc.positionAt(definition.end),
+
+                return [
+                    {
+                        uri: 'file://' + definition.name,
+                        range: {
+                            start: {
+                                line: definition.startLine,
+                                character: definition.startCol,
+                            },
+                            end: {
+                                line: definition.endLine,
+                                character: definition.endCol,
                             },
                         },
-                    ];
-                }
+                    },
+                ];
             }
         }
     }
