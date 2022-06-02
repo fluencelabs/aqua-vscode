@@ -166,7 +166,7 @@ documents.onDidOpen(async (change) => {
 async function validateDocument(textDocument: TextDocument): Promise<void> {
     const settings = await getDocumentSettings(textDocument.uri);
 
-    const [diagnostics, locations] = await compileAqua(settings, textDocument, folders);
+    const [diagnostics, locations] = await compileAqua(settings, textDocument, folders, connection.console);
 
     allLocations.set(textDocument.uri, locations);
 
