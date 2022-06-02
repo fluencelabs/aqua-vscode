@@ -9,7 +9,7 @@ import {
 
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
 
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import { Position, TextDocument } from 'vscode-languageserver-textdocument';
 import { compileAqua } from './validation';
 import type { DefinitionParams, Location } from 'vscode-languageserver';
 import type { TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
@@ -29,9 +29,15 @@ export interface Settings {
     imports: string[];
 }
 
-function searchDefinition(offset: number, name: string, locations: TokenLink[]): TokenLink | undefined {
+function searchDefinition(position: Position, name: string, locations: TokenLink[]): TokenLink | undefined {
     return locations.find((token) => {
-        return token.current.name == name && token.current.start <= offset && token.current.end >= offset;
+        return (
+            token.current.name == name &&
+            token.current.startLine <= position.line &&
+            token.current.startCol <= position.character &&
+            token.current.endLine >= position.line &&
+            token.current.endCol >= position.character
+        );
     });
 }
 
@@ -44,24 +50,32 @@ let globalSettings: Settings = defaultSettings;
 // Cache the settings of all open documents
 const documentSettings: Map<string, Thenable<Settings>> = new Map();
 
-let currentLocations: TokenLink[] = [];
+const allLocations: Map<string, TokenLink[]> = new Map();
 
 async function onDefinition({ textDocument, position }: DefinitionParams): Promise<Location[]> {
+    connection.console.log('onDefinition event');
     const doc = documents.get(textDocument.uri);
+
     if (doc) {
-        const offset = doc.offsetAt(position);
-        const token = searchDefinition(offset, doc.uri.replace('file://', ''), currentLocations);
-        connection.console.log('find token: ' + JSON.stringify(token));
-        if (token) {
-            const definition = token.definition;
-            const defDoc = documents.get('file://' + definition.name);
-            if (defDoc) {
+        const currentLocations = allLocations.get(textDocument.uri);
+        if (currentLocations) {
+            const token = searchDefinition(position, doc.uri.replace('file://', ''), currentLocations);
+            connection.console.log('find token: ' + JSON.stringify(token));
+            if (token) {
+                const definition = token.definition;
+
                 return [
                     {
-                        uri: defDoc.uri,
+                        uri: 'file://' + definition.name,
                         range: {
-                            start: defDoc.positionAt(definition.start),
-                            end: defDoc.positionAt(definition.end),
+                            start: {
+                                line: definition.startLine,
+                                character: definition.startCol,
+                            },
+                            end: {
+                                line: definition.endLine,
+                                character: definition.endCol,
+                            },
                         },
                     },
                 ];
@@ -104,6 +118,7 @@ documents.onDidClose((e) => {
 });
 
 connection.onInitialize((params: InitializeParams) => {
+    connection.console.log('onInitialize event');
     const capabilities = params.capabilities;
 
     hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration);
@@ -131,6 +146,7 @@ connection.onInitialize((params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
+    connection.console.log('onInitialized event');
     connection.workspace.onDidChangeWorkspaceFolders((event) => {
         folders = folders.concat(event.added);
         folders = folders.filter((f) => !event.removed.includes(f));
@@ -138,10 +154,12 @@ connection.onInitialized(() => {
 });
 
 documents.onDidSave(async (change) => {
+    connection.console.log('onDidSave event');
     await validateDocument(change.document);
 });
 
 documents.onDidOpen(async (change) => {
+    connection.console.log('onDidOpen event');
     await validateDocument(change.document);
 });
 
@@ -150,7 +168,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     const [diagnostics, locations] = await compileAqua(settings, textDocument, folders);
 
-    currentLocations = locations;
+    allLocations.set(textDocument.uri, locations);
 
     // Send the computed diagnostics to VSCode.
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
