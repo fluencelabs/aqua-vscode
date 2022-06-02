@@ -4,8 +4,8 @@ Syntax highlighting for `aqua` programming language
 
 ## Installation
 
-1. Install [the extension](https://marketplace.visualstudio.com/items?itemName=FluenceLabs.aqua-syntax-highlight)
-2. Configure colors for aqua-specific tokens (see below)
+1. Install [the extension](https://marketplace.visualstudio.com/items?itemName=FluenceLabs.aqua)
+2. Configure colors for aqua-specific tokens  if needed (see below)
 
 Add the following lines to the [settings.json](https://code.visualstudio.com/docs/getstarted/settings) file. Feel free
 to choose colors according to you favorite theme. In the example below services will be highlighted as green and all the
@@ -41,7 +41,7 @@ Therefore, Aqua scripts are compiled into several targets at once, with AIR and 
 
 ## Features
 
-Enables syntax highlighting for `aqua` programming language
+Enables syntax highlighting for `aqua` programming language, compilation on file changes, go-to-definition.
 
 ## Developing
 
