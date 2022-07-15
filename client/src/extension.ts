@@ -1,11 +1,26 @@
 import * as path from 'path';
-import { ExtensionContext, workspace } from 'vscode';
+import { commands, ExtensionContext, window, workspace } from 'vscode';
 
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
+    context.subscriptions.push(
+        commands.registerCommand('aqua.sayHello', () => {
+            console.log('call sayHello');
+
+            window.showInputBox({
+                title: 'arg1',
+                value: 'hello',
+            });
+            window.showInputBox({
+                title: 'arg2',
+                value: 'world',
+            });
+        }),
+    );
+
     // The server is implemented in node
     const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
     // The debug options for the server

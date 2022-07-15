@@ -20,7 +20,8 @@
         "vscode": "^1.50.0"
     },
     "activationEvents": [
-        "onLanguage:aqua"
+        "onLanguage:aqua",
+        "onCommand:aqua.sayHello"
     ],
     "main": "./client/out/extension",
     "contributes": {
@@ -54,6 +55,20 @@
                     "description": "Adds imports for aqua file or project"
                 }
             }
+        },
+        "commands": [
+            {
+                "command": "aqua.sayHello",
+                "title": "Hello World"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "aqua.sayHello",
+                    "when": "resourceLangId == aqua"
+                }
+            ]
         }
     },
     "scripts": {
@@ -77,6 +92,7 @@
         "eslint-plugin-promise": "^6.0.0",
         "mocha": "^9.2.1",
         "prettier": "2.6.2",
-        "typescript": "^4.6.3"
+        "typescript": "^4.6.3",
+        "vscode": "^1.1.37"
     }
 }
