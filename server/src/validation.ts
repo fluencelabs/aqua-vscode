@@ -3,6 +3,8 @@ import { AquaLSP, ErrorInfo, TokenLink } from '@fluencelabs/aqua-language-server
 import { Diagnostic, DiagnosticSeverity, RemoteConsole } from 'vscode-languageserver/node';
 import type { Settings } from './server';
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
+import * as fs from 'fs';
+import * as Path from 'path';
 
 export async function compileAqua(
     settings: Settings,
@@ -45,6 +47,25 @@ export async function compileAqua(
 
     const diagnostics: Diagnostic[] = [];
 
+    let links: TokenLink[] = [];
+    let p = Path.parse(textDocument.uri);
+    let linksSearch = [p.dir.replace('file://', '')].concat(imports);
+    result.importLocations.map(function (ti) {
+        const path = linksSearch.map((i) => i + '/' + ti.path).find((i) => fs.existsSync(i));
+        if (path) {
+            links.push({
+                current: ti.current,
+                definition: {
+                    name: path,
+                    startLine: 0,
+                    startCol: 0,
+                    endLine: 0,
+                    endCol: 0,
+                },
+            });
+        }
+    });
+
     if (result.errors) {
         // Add all errors to Diagnostic
         result.errors.forEach((err: ErrorInfo) => {
@@ -73,5 +94,5 @@ export async function compileAqua(
         });
     }
 
-    return [diagnostics, result.locations];
+    return [diagnostics, result.locations.concat(links)];
 }
