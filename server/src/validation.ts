@@ -16,16 +16,14 @@ function findNearestNodeModules(fileLocation: string, projectLocation: string): 
         let currentPath = Path.join(fileLocation.replace('file:/', ''), '..');
 
         let result: string | undefined = undefined;
-        let found = false;
-        while (!found) {
+
+        while (true) {
             const possibleNodeModulesPath = Path.join(currentPath, '/node_modules');
             if (fs.existsSync(possibleNodeModulesPath)) {
                 result = Path.resolve(possibleNodeModulesPath);
-                found = true;
                 break;
             }
             if (Path.resolve(currentPath) === projectPath) {
-                found = true;
                 break;
             } else {
                 currentPath = Path.join(currentPath, '..');
