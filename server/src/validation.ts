@@ -6,6 +6,42 @@ import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
 import * as fs from 'fs';
 import * as Path from 'path';
 
+function findNearestNodeModules(fileLocation: string, projectLocation: string): string | undefined {
+    const relative = Path.relative(projectLocation, fileLocation);
+
+    const projectPath = Path.resolve(projectLocation.replace('file://', ''));
+
+    // project location is a part of file location
+    if (relative && !relative.startsWith('..') && !Path.isAbsolute(relative)) {
+        let currentPath = Path.join(fileLocation.replace('file:/', ''), '..');
+
+        let result: string | undefined = undefined;
+        let found = false;
+        while (!found) {
+            const possibleNodeModulesPath = Path.join(currentPath, '/node_modules');
+            if (fs.existsSync(possibleNodeModulesPath)) {
+                result = Path.resolve(possibleNodeModulesPath);
+                found = true;
+                break;
+            }
+            if (Path.resolve(currentPath) === projectPath) {
+                found = true;
+                break;
+            } else {
+                currentPath = Path.join(currentPath, '..');
+            }
+        }
+
+        return result;
+    } else {
+        return undefined;
+    }
+}
+
+function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
+    return value !== null && value !== undefined;
+}
+
 export async function compileAqua(
     settings: Settings,
     textDocument: TextDocument,
@@ -15,6 +51,9 @@ export async function compileAqua(
     const uri = textDocument.uri.replace('file://', '');
 
     let imports: string[] = [];
+
+    let nodeModulesPaths = folders.map((f) => findNearestNodeModules(textDocument.uri, f.uri)).filter(notEmpty);
+    imports = imports.concat(nodeModulesPaths);
 
     // add all workspace folders to imports
     imports = imports.concat(folders.map((f) => f.uri.replace('file://', '')));
