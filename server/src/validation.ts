@@ -50,12 +50,14 @@ export async function compileAqua(
 
     let imports: string[] = [];
 
-    let nodeModulesPaths = folders.map((f) => findNearestNodeModules(textDocument.uri, f.uri)).filter(notEmpty);
+    const nodeModulesPaths = folders.map((f) => findNearestNodeModules(textDocument.uri, f.uri)).filter(notEmpty);
     imports = imports.concat(nodeModulesPaths);
 
+    const openFolders = folders.map((f) => f.uri.replace('file://', ''));
+
     // add all workspace folders to imports
-    imports = imports.concat(folders.map((f) => f.uri.replace('file://', '')));
-    imports = imports.concat(folders.map((f) => f.uri.replace('file://', '')) + '/node_modules');
+    imports = imports.concat(openFolders);
+    imports = imports.concat(openFolders.map((f) => Path.join(f, '/node_modules')));
 
     if (settings.imports && Array.isArray(settings.imports)) {
         const validatedImports: string[] = settings.imports.filter((s) => {
@@ -71,8 +73,18 @@ export async function compileAqua(
             }
         });
 
-        imports = imports.concat(validatedImports.map((s) => s.replace('file://', '')));
-        imports = imports.concat(validatedImports.map((s) => s.replace('file://', '')) + '/node_modules');
+        const absoluteImports = validatedImports.filter((s) => Path.isAbsolute(s));
+
+        // relative imports must be started from open folders
+        const relativeImports = validatedImports
+            .filter((s) => !absoluteImports.includes(s))
+            .map((s) => openFolders.map((f) => Path.join(f, s)))
+            .flat();
+
+        imports = imports.concat(relativeImports);
+        imports = imports.concat(relativeImports.map((s) => Path.join(s, '/node_modules')));
+        imports = imports.concat(absoluteImports);
+        imports = imports.concat(absoluteImports.map((s) => Path.join(s, '/node_modules')));
     }
 
     if (require.main) {
