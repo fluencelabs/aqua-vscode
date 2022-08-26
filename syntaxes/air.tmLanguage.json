@@ -1,0 +1,100 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "air",
+    "patterns": [
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#constants"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#variables"
+        },
+        {
+            "include": "#lambda"
+        }
+    ],
+    "repository": {
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.instruction.air",
+                    "match": "\\b(ap|call|canon|fold|par|next|match|mismatch|new|null|seq|xor)\\b"
+                }
+            ]
+        },
+        "constants": {
+            "patterns": [
+                {
+                    "name": "constant.language.air",
+                    "match": "%init_peer_id%|%last_error%"
+                },
+                {
+                    "name": "constant.numeric.air",
+                    "match": "\\b\\d+\\b"
+                },
+                {
+                    "name": "constant.language.boolean.air",
+                    "match": "\\b(true|false)\\b"
+                }
+            ]
+        },
+        "strings": {
+            "name": "string.quoted.double.air",
+            "begin": "\"",
+            "end": "\"",
+            "patterns": []
+        },
+        "comments": {
+            "name": "comment.line.air",
+            "begin": ";",
+            "end": "$"
+        },
+        "lambda": {
+            "//": "AIR lambdas",
+            "begin": "\\.\\$",
+            "end": "!",
+            "beginCaptures": {
+                "0": { "name": "punctuation.paren.open" }
+            },
+            "endCaptures": {
+                "0": { "name": "punctuation.paren.close" }
+            },
+            "name": "expression.group",
+            "patterns": [
+                {
+                    "//": "Field accessor",
+                    "name": "support.function.method.call",
+                    "match": "\\.\\w+"
+                },
+                {
+                    "//": "Array acessor",
+                    "name": "keyword.control.other",
+                    "match": "\\[[A-Za-z0-9\\-_\\\"]+\\]"
+                }
+            ]
+        },
+        "variables": {
+            "patterns": [
+                {
+                    "//": "Stream and canonicalized stream variables start with $ or # respectively",
+                    "name": "variable.language.stream",
+                    "match": "[\\$\\#][A-Za-z_\\-][A-Za-z0-9_\\-]*"
+                },
+                {
+                    "//": "Scalar variables",
+                    "name": "variable.other.scalar",
+                    "match": "[A-Za-z_\\-][A-Za-z0-9_\\-]*"
+                }
+            ]
+        }
+    },
+    "scopeName": "source.air"
+}

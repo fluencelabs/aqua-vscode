@@ -33,7 +33,17 @@
                 "extensions": [
                     ".aqua"
                 ],
-                "configuration": "./language-configuration.json"
+                "configuration": "./language-configurations/aqua.json"
+            },
+            {
+                "id": "air",
+                "aliases": [
+                    "AIR"
+                ],
+                "extensions": [
+                    ".air"
+                ],
+                "configuration": "./language-configurations/air.json"
             }
         ],
         "grammars": [
@@ -41,6 +51,11 @@
                 "language": "aqua",
                 "scopeName": "source.aqua",
                 "path": "./syntaxes/aqua.tmLanguage.json"
+            },
+            {
+                "language": "air",
+                "scopeName": "source.air",
+                "path": "./syntaxes/air.tmLanguage.json"
             }
         ],
         "configuration": {
