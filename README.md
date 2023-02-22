@@ -1,56 +1,53 @@
-# aqua syntax highlighting
+# Aqua Syntax Highlighting
 
-Syntax highlighting for `aqua` programming language
+The tool enables syntax highlighting for [Aqua](https://github.com/fluencelabs/aqua) programming language, compilation on file changes, and go-to definition in Visual Studio.
 
-## Installation
 
-1. Install [the extension](https://marketplace.visualstudio.com/items?itemName=FluenceLabs.aqua)
-2. Configure colors for aqua-specific tokens  if needed (see below)
+## Installation and Usage
 
-Add the following lines to the [settings.json](https://code.visualstudio.com/docs/getstarted/settings) file. Feel free
-to choose colors according to you favorite theme. In the example below services will be highlighted as green and all the
-keywords which affect the topology will be highlighted as red
+Installation is pretty simple:
 
-```json
-    "editor.tokenColorCustomizations": {
-        "textMateRules": [
-            {
-                "scope": "keyword.topology.aqua",
-                "settings": {
-                    "foreground": "#FF0000",
+1. Install [the extension](https://marketplace.visualstudio.com/items?itemName=FluenceLabs.aqua).
+
+2. Configure colors for Aqua-specific tokens if needed (see below).
+
+    Add the following lines to the [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings) file. Feel free to choose colors according to your favorite theme. In the example below, services will be highlighted as green and all keywords that affect the topology will be highlighted as red.
+
+    ```json
+        "editor.tokenColorCustomizations": {
+            "textMateRules": [
+                {
+                    "scope": "keyword.topology.aqua",
+                    "settings": {
+                        "foreground": "#FF0000",
+                    }
+                },
+                {
+                    "scope": "support.service.aqua",
+                    "settings": {
+                        "foreground": "#00FF00",
+                    }
                 }
-            },
-            {
-                "scope": "support.service.aqua",
-                "settings": {
-                    "foreground": "#00FF00",
-                }
-            }
-        ]
-    }
-```
+            ]
+        }
+    ```
 
-## What is aqua?
+More details can be found [here](vsc-extension-quickstart.md).
 
-Aqua is a new-gen language for distributed systems.
+NOTE: if you're going to change pattern names, check out the naming rules in [TextMate Grammar doc](https://macromates.com/manual/en/language_grammars). You have to use the predefined pattern naming scheme, or the syntax won't be highlighted.
 
-Aqua programs are executed on many peers, sequentially or in parallel, forming a single-use coordination network.
 
-Aqua's runtime is heterogeneous: it includes browsers, servers, devices, all involved in solving a single task.
-Therefore, Aqua scripts are compiled into several targets at once, with AIR and Typescript as a default.
+## Support
 
-## Features
+Please, file an [issue](https://github.com/fluencelabs/aqua-vscode/issues) if you find a bug. You can also contact us at [Discord](https://discord.com/invite/5qSnPZKh7u) or [Telegram](https://t.me/fluence_project).  We will do our best to resolve the issue ASAP.
 
-Enables syntax highlighting for `aqua` programming language, compilation on file changes, go-to-definition.
 
-## Developing
+## Contributing
 
-see [vsc-extension-quickstart.md](vsc-extension-quickstart.md)
+Any interested person is welcome to contribute to the project. Please, make sure you read and follow some basic [rules](./CONTRIBUTING.md).
 
-NOTE: if you're going to change pattern names, check out the naming rules
-in [TextMate Grammar doc](https://macromates.com/manual/en/language_grammars). You have to use predefined pattern naming
-scheme, or the syntax won't be highlighted.
 
 ## License
 
-[Apache 2.0](LICENSE)
+All software code is copyright (c) Fluence Labs, Inc. under the [Apache-2.0](./LICENSE) license.
+
