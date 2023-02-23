@@ -49,16 +49,13 @@ export async function compileAqua(
     const uri = textDocument.uri.replace('file://', '');
 
     let imports: string[] = [];
-
-    const nodeModulesPaths = folders.map((f) => findNearestNodeModules(textDocument.uri, f.uri)).filter(notEmpty);
-    imports = imports.concat(nodeModulesPaths);
-
     const openFolders = folders.map((f) => f.uri.replace('file://', ''));
 
     // add all workspace folders to imports
+    // 1. open folders
     imports = imports.concat(openFolders);
-    imports = imports.concat(openFolders.map((f) => Path.join(f, '/node_modules')));
 
+    // 2. imports from settings
     if (settings.imports && Array.isArray(settings.imports)) {
         const validatedImports: string[] = settings.imports.filter((s) => {
             if (typeof s != 'string') {
@@ -87,9 +84,17 @@ export async function compileAqua(
         imports = imports.concat(absoluteImports.map((s) => Path.join(s, '/node_modules')));
     }
 
+    // 3. node_modules in open folders
+    imports = imports.concat(openFolders.map((f) => Path.join(f, '/node_modules')));
+
+    // 4. path to aqua library
     if (require.main) {
         imports = imports.concat(require.main.paths);
     }
+
+    // 5. node_modules from root to open folders
+    const nodeModulesPaths = folders.map((f) => findNearestNodeModules(textDocument.uri, f.uri)).filter(notEmpty);
+    imports = imports.concat(nodeModulesPaths);
 
     // compile aqua and get possible errors
     const result = await AquaLSP.compile(uri, imports);
