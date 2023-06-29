@@ -48,7 +48,7 @@ function getImports(
 ) {
     let imports: string[] = [];
 
-    const assumeImports = !settings.useOnlyImportsFromSettings;
+    const assumeImports = settings.enableLegacyAutoImportSearch;
 
     const openFolders = folders.map((f) => f.uri.replace('file://', ''));
 

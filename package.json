@@ -69,7 +69,7 @@
                         "default": [],
                         "description": "Adds imports for aqua file or project"
                     },
-                    "useOnlyImportsFromSettings": {
+                    "enableLegacyAutoImportSearch": {
                         "scope": "resource",
                         "type": "boolean",
                         "default": false,
