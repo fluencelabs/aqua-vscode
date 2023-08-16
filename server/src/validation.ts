@@ -40,20 +40,21 @@ function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
     return value !== null && value !== undefined;
 }
 
-export async function compileAqua(
+function getImports(
     settings: Settings,
     textDocument: TextDocument,
     folders: WorkspaceFolder[],
     console: RemoteConsole,
-): Promise<[Diagnostic[], TokenLink[]]> {
-    const uri = textDocument.uri.replace('file://', '');
-
+) {
     let imports: string[] = [];
+
+    const assumeImports = settings.enableLegacyAutoImportSearch;
+
     const openFolders = folders.map((f) => f.uri.replace('file://', ''));
 
     // add all workspace folders to imports
     // 1. open folders
-    imports = imports.concat(openFolders);
+    if (assumeImports) imports = imports.concat(openFolders);
 
     // 2. imports from settings
     if (settings.imports && Array.isArray(settings.imports)) {
@@ -79,22 +80,40 @@ export async function compileAqua(
             .flat();
 
         imports = imports.concat(relativeImports);
-        imports = imports.concat(relativeImports.map((s) => Path.join(s, '/node_modules')));
         imports = imports.concat(absoluteImports);
-        imports = imports.concat(absoluteImports.map((s) => Path.join(s, '/node_modules')));
+
+        if (assumeImports) {
+            imports = imports.concat(relativeImports.map((s) => Path.join(s, '/node_modules')));
+            imports = imports.concat(absoluteImports.map((s) => Path.join(s, '/node_modules')));
+        }
     }
 
-    // 3. node_modules in open folders
-    imports = imports.concat(openFolders.map((f) => Path.join(f, '/node_modules')));
+    if (assumeImports) {
+        // 3. node_modules in open folders
+        imports = imports.concat(openFolders.map((f) => Path.join(f, '/node_modules')));
 
-    // 4. path to aqua library
-    if (require.main) {
-        imports = imports.concat(require.main.paths);
+        // 4. path to aqua library
+        if (require.main) {
+            imports = imports.concat(require.main.paths);
+        }
+
+        // 5. node_modules from root to open folders
+        const nodeModulesPaths = folders.map((f) => findNearestNodeModules(textDocument.uri, f.uri)).filter(notEmpty);
+        imports = imports.concat(nodeModulesPaths);
     }
 
-    // 5. node_modules from root to open folders
-    const nodeModulesPaths = folders.map((f) => findNearestNodeModules(textDocument.uri, f.uri)).filter(notEmpty);
-    imports = imports.concat(nodeModulesPaths);
+    return imports;
+}
+
+export async function compileAqua(
+    settings: Settings,
+    textDocument: TextDocument,
+    folders: WorkspaceFolder[],
+    console: RemoteConsole,
+): Promise<[Diagnostic[], TokenLink[]]> {
+    const uri = textDocument.uri.replace('file://', '');
+
+    const imports = getImports(settings, textDocument, folders, console);
 
     // compile aqua and get possible errors
     const result = await AquaLSP.compile(uri, imports);

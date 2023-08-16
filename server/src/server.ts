@@ -27,6 +27,7 @@ let folders: WorkspaceFolder[] = [];
 
 export interface Settings {
     imports: string[];
+    enableLegacyAutoImportSearch: boolean;
 }
 
 function searchDefinition(position: Position, name: string, locations: TokenLink[]): TokenLink | undefined {
@@ -44,7 +45,7 @@ function searchDefinition(position: Position, name: string, locations: TokenLink
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: Settings = { imports: [] };
+const defaultSettings: Settings = { imports: [], enableLegacyAutoImportSearch: false };
 let globalSettings: Settings = defaultSettings;
 
 // Cache the settings of all open documents
