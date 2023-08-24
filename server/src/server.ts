@@ -49,7 +49,7 @@ const defaultSettings: Settings = { imports: [], enableLegacyAutoImportSearch: f
 let globalSettings: Settings = defaultSettings;
 
 // Cache the settings of all open documents
-const documentSettings: Map<string, Thenable<Settings>> = new Map();
+const documentSettings: Map<string, Settings> = new Map();
 
 const allLocations: Map<string, TokenLink[]> = new Map();
 
@@ -98,18 +98,18 @@ connection.onDidChangeConfiguration((change) => {
     documents.all().forEach(validateDocument);
 });
 
-function getDocumentSettings(resource: string): Thenable<Settings> {
+async function getDocumentSettings(resource: string): Promise<Settings> {
     if (!hasConfigurationCapability) {
         return Promise.resolve(globalSettings);
     }
-    let result = documentSettings.get(resource);
+    let result = await documentSettings.get(resource);
     if (!result) {
-        result = connection.workspace.getConfiguration({
+        result = await connection.workspace.getConfiguration({
             scopeUri: resource,
             section: 'aquaSettings',
         });
         if (!result) {
-            result = Promise.resolve(defaultSettings);
+            result = defaultSettings;
         }
         documentSettings.set(resource, result);
     }
