@@ -108,6 +108,9 @@ function getDocumentSettings(resource: string): Thenable<Settings> {
             scopeUri: resource,
             section: 'aquaSettings',
         });
+        if (!result) {
+            result = Promise.resolve(defaultSettings);
+        }
         documentSettings.set(resource, result);
     }
     return result;
