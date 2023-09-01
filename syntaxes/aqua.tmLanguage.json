@@ -22,28 +22,44 @@
         "keywords": {
             "patterns": [
                 {
-                    "name": "support.type.primitive.aqua",
-                    "match": "\\b(string|bool|u8|u16|u32|u64|s8|s16|s32|s64|f32|f64)\\b"
-                },
-                {
                     "name": "keyword.control.flow.aqua",
-                    "match": "\\b(try|catch|par|if|else|otherwise|for|co|join)\\b"
+                    "match": "\\b(try|catch|par|if|else|otherwise|for|co|join|parseq)\\b"
                 },
                 {
                     "name": "keyword.control.other.aqua",
-                    "match": "(<<-|<-|->|\\[\\]|\\*|\\?\\=|\\?|==)"
+                    "match": "(<<-|<-|->)"
                 },
                 {
-                    "name": "keyword.topology.aqua",
-                    "match": "\\b(on|via|use|func|service|data|alias|const)\\b"
+                    "name": "keyword.operator.math.aqua",
+                    "match": "(\\+|-|\/|(?<=[^:]\\s*)\\*|%|\\*\\*|>=|<=|>|<)"
                 },
                 {
                     "name": "keyword.operator.logical.aqua",
-                    "match": "\\b(eqs|neq)\\b"
+                    "match": "=="
                 },
                 {
-                    "name": "keyword.control.import",
-                    "match": "\\b(import|module|export|declares|from|as)\\b"
+                    "name": "keyword.control.other.aqua",
+                    "match": "(\\[\\]|\\*|\\?|=|\\?=)"
+                },
+                {
+                    "name": "keyword.control.topology.aqua",
+                    "match": "\\b(on|via)\\b"
+                },
+                {
+                    "name": "keyword.control.declaration.aqua",
+                    "match": "\\b(func|service|data|ability|alias|const)\\b"
+                },
+                {
+                    "name": "keyword.operator.logical.aqua",
+                    "match": "(\\|\\||&&|!(?=\\s*\\w))"
+                },
+                {
+                    "name": "keyword.operator.control.aqua",
+                    "match": "(?<=\\w\\s*)!"
+                },
+                {
+                    "name": "keyword.control.import.aqua",
+                    "match": "\\b(import|module|export|declares|from|as|use|aqua)\\b"
                 }
             ]
         },
@@ -51,11 +67,11 @@
             "patterns": [
                 {
                     "name": "constant.language.topology.aqua",
-                    "match": "%init_peer_id%|%last_error%|%HOST_PEER_ID%"
+                    "match": "%init_peer_id%|%last_error%|%HOST_PEER_ID%|HOST_PEER_ID|INIT_PEER_ID"
                 },
                 {
-                    "name": "constant.numeric.aqua",
-                    "match": "\\b\\d+\\b"
+                    "name": "constant.language.numeric.aqua",
+                    "match": "\\b-?\\d+(\\.\\d*)?\\b"
                 },
                 {
                     "name": "constant.language.boolean.aqua",
@@ -63,12 +79,7 @@
                 },
                 {
                     "name": "constant.language.option.nil.aqua",
-                    "match": "nil"
-                },
-                {
-                    "//": "Defines tokens for constants used anywhere in code",
-                    "name": "constant.language.other.aqua",
-                    "match": "\\b[A-Z][A-Z0-9_]*\\b"
+                    "match": "\\bnil\\b"
                 }
             ]
         },
@@ -91,64 +102,83 @@
         "semantics": {
             "patterns": [
                 {
+                    "name": "entity.name.type.primitive.aqua",
+                    "match": "\\b(string|bool|u8|u16|u32|u64|i8|i16|i32|i64|f32|f64)\\b"
+                },
+                {
                     "//": "Matches type name defined with alias clause",
-                    "name": "entity.name.type",
+                    "name": "entity.name.type.aqua",
                     "match": "(?<=alias\\s*)[A-Z]\\w*(?=\\s*:)"
                 },
                 {
-                    "//": "Matches type specifier after function arguments and variables",
-                    "name": "support.type.specifier",
-                    "match": "(?<=alias.*?:.*?,*\\s**[\\[\\]\\*\\?]*)[A-Z][A-Za-z0-9_]*"
+                    "//": "Matches type specifiers in declarations",
+                    "name": "entity.name.type.specifier.aqua",
+                    "match": "(?<=:\\s*)(?:\\[\\]|\\*|\\?)*[A-Za-z]\\w*"
                 },
                 {
-                    "//": "Matches type specifier in lambda type aliases",
-                    "name": "support.type.specifier",
-                    "match": "(?<=:\\s*[\\[\\]\\*\\?]*)[A-Z][A-Za-z0-9_]*"
-                },
-                {
-                    "//": "Defines tokens for data types in Aqua (usage). Data types in aqua start with a captial letter and are followed by any space char.",
-                    "name": "support.type.specifier",
-                    "match": "\\b[A-Z][A-Za-z0-9_]+(?=\\s)"
-                },
-                {
-                    "//": "Defines tokens for data and service definitions ('data XXX:')",
+                    "//": "Defines tokens for data definitions ('data XXX:')",
                     "name": "entity.name.type.data.aqua",
                     "match": "\\b(?<=(data)\\s+)[A-Z][A-Za-z0-9_]+(?=:)\\b"
                 },
                 {
-                    "//": "Defines tokens for data and service definitions ('service YYY:')",
+                    "//": "Defines tokens for service definitions ('service YYY:')",
                     "name": "entity.name.type.service.aqua",
-                    "match": "\\b(?<=(service)\\s+)[A-Z][A-Za-z0-9_]+(?=(\\(\"\\w*\"\\))*:)\\b"
+                    "match": "\\b(?<=(service)\\s+)[A-Z][A-Za-z0-9_]+(?=(\\(\"\\w*\"\\))?:)\\b"
                 },
                 {
-                    "//": "Metod name in 'Srv.method(args)' call",
+                    "//": "Defines tokens for ability definitions ('ability YYY:')",
+                    "name": "entity.name.type.ability.aqua",
+                    "match": "\\b(?<=(ability)\\s+)[A-Z][A-Za-z0-9_]+(?=:)\\b"
+                },
+                {
+                    "//": "Method name in 'Ability.field.method(args)'",
                     "name": "support.function.method.call.aqua",
                     "match": "(?<=\\.)[a-z][a-zA-Z0-9_]+(?=\\()"
                 },
                 {
-                    "//": "Service name in 'Srv.method(args)' call",
-                    "name": "support.type.service.aqua",
-                    "match": "\\b[A-Z][A-Za-z0-9_]*(?=\\..*?\\()"
+                    "//": "Ability name in 'Ability.method(args)' or 'Ability.field'",
+                    "name": "support.type.ability.aqua",
+                    "match": "\\b(?<=[^\\.])[A-Za-z]\\w*(?=\\.)"
+                },
+                {
+                    "//": "Field name in 'Ability.field.method(args)' or 'Ability.field'",
+                    "name": "support.other.field.aqua",
+                    "match": "(?<=\\.)(?>[A-Za-z]\\w*)\\b(?!\\s*\\()"
                 },
                 {
                     "//": "Matches function arguments",
-                    "name": "support.variable.parameter.function.arg",
-                    "match": "\\b[a-z]\\w*(?=:)\\b"
+                    "name": "variable.parameter.value.aqua",
+                    "match": "(?<=[,\\(]\\s*)[A-Za-z]\\w*(?=\\s*:)"
+                },
+                {
+                    "//": "Matches function ability arguments",
+                    "name": "variable.parameter.ability.aqua",
+                    "match": "(?<=func\\s*[A-Za-z]\\w*\\s*{\\s*(?:[A-Za-z]\\w*\\s*,\\s*)*)[A-Za-z]\\w*\\b"
                 },
                 {
                     "//": "Matches defined variables",
-                    "name": "variable.other",
-                    "match": "\\b[a-z]\\w*(?=\\s*<-)\\b"
+                    "name": "variable.other.definition.aqua",
+                    "match": "\\b[A-Za-z]\\w*(?=\\s*(?:,\\s*[A-Za-z]\\w*)*\\s*(?:<-|=))"
+                },
+                {
+                    "//": "Matches declared variables",
+                    "name": "variable.other.declaration.aqua",
+                    "match": "\\b[A-Za-z]\\w*(?=:)"
                 },
                 {
                     "//": "Matches function definition",
-                    "name": "entity.name.function",
-                    "match": "\\b(?<=func\\s*)[a-z]\\w*(?=\\s*\\()\\b"
+                    "name": "entity.name.function.aqua",
+                    "match": "\\b(?<=func\\s*)[A-Za-z]\\w*(?=\\s*(?:\\(|\\{))"
                 },
                 {
-                    "//": "Matches method definition",
-                    "name": "entity.name.function",
-                    "match": "\\b[a-z]\\w*(?=\\s*\\(.*?\\)\\s*)\\b"
+                    "//": "Matches method definition, function usage or aggregate creation",
+                    "name": "entity.name.function.usage.aqua",
+                    "match": "\\b[A-Za-z]\\w*(?=\\s*(?:\\(|\\{))"
+                },
+                {
+                    "//": "Matches variables anywhere",
+                    "name": "variable.other.any.aqua",
+                    "match": "\\b[A-Za-z]\\w*\\b"
                 }
             ]
         }
