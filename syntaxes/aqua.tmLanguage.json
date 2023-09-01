@@ -99,12 +99,12 @@
                 },
                 {
                     "//": "Matches type name defined with alias clause",
-                    "name": "entity.name.type",
+                    "name": "entity.name.type.aqua",
                     "match": "(?<=alias\\s*)[A-Z]\\w*(?=\\s*:)"
                 },
                 {
                     "//": "Matches type specifiers in declarations",
-                    "name": "support.type.specifier",
+                    "name": "entity.name.type.specifier.aqua",
                     "match": "(?<=:\\s*)(?:\\[\\]|\\*|\\?)*[A-Za-z]\\w*"
                 },
                 {
@@ -135,37 +135,37 @@
                 {
                     "//": "Field name in 'Ability.field.method(args)' or 'Ability.field'",
                     "name": "support.other.field.aqua",
-                    "match": "\\b(?<=\\.)(?>[A-Za-z]\\w*)(?!\\s*\\()"
+                    "match": "(?<=\\.)(?>[A-Za-z]\\w*)\\b(?!\\s*\\()"
                 },
                 {
                     "//": "Matches function arguments",
-                    "name": "support.variable.parameter.aqua",
-                    "match": "\\b(?<=[,\\(]\\s*)[A-Za-z]\\w*(?=:)\\b"
+                    "name": "variable.parameter.value.aqua",
+                    "match": "(?<=[,\\(]\\s*)[A-Za-z]\\w*(?=\\s*:)"
+                },
+                {
+                    "//": "Matches function ability arguments",
+                    "name": "variable.parameter.ability.aqua",
+                    "match": "(?<=func\\s*[A-Za-z]\\w*{\\s*(?:[A-Za-z]\\w*,\\s*)*)[A-Za-z]\\w*\\b"
                 },
                 {
                     "//": "Matches defined variables",
                     "name": "variable.other.definition.aqua",
-                    "match": "\\b[A-Za-z]\\w*(?=\\s*(?:,\\s*[A-Za-z]\\w*)*\\s*(?:<-|=))\\b"
+                    "match": "\\b[A-Za-z]\\w*(?=\\s*(?:,\\s*[A-Za-z]\\w*)*\\s*(?:<-|=))"
                 },
                 {
                     "//": "Matches declared variables",
                     "name": "variable.other.declaration.aqua",
-                    "match": "\\b[A-Za-z]\\w*(?=:)\\b"
+                    "match": "\\b[A-Za-z]\\w*(?=:)"
                 },
                 {
                     "//": "Matches function definition",
                     "name": "entity.name.function.aqua",
-                    "match": "\\b(?<=func\\s*)[A-Za-z]\\w*(?=\\s*\\()\\b"
+                    "match": "\\b(?<=func\\s*)[A-Za-z]\\w*(?=\\s*(?:\\(|\\{))"
                 },
                 {
                     "//": "Matches method definition, function usage or aggregate creation",
                     "name": "entity.name.function.usage.aqua",
-                    "match": "\\b[A-Za-z]\\w*(?=\\s*\\()\\b"
-                },
-                {
-                    "//": "Matches constants anywhere",
-                    "name": "variable.other.constant.aqua",
-                    "match": "\\b[A-Z0-9_]*\\b"
+                    "match": "\\b[A-Za-z]\\w*(?=\\s*(?:\\(|\\{))"
                 },
                 {
                     "//": "Matches variables anywhere",
