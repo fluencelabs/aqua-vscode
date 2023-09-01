@@ -153,7 +153,7 @@
                 {
                     "//": "Matches function ability arguments",
                     "name": "variable.parameter.ability.aqua",
-                    "match": "(?<=func\\s*[A-Za-z]\\w*{\\s*(?:[A-Za-z]\\w*,\\s*)*)[A-Za-z]\\w*\\b"
+                    "match": "(?<=func\\s*[A-Za-z]\\w*\\s*{\\s*(?:[A-Za-z]\\w*\\s*,\\s*)*)[A-Za-z]\\w*\\b"
                 },
                 {
                     "//": "Matches defined variables",
