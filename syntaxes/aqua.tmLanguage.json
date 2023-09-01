@@ -22,7 +22,7 @@
         "keywords": {
             "patterns": [
                 {
-                    "name": "keyword.type.primitive.aqua",
+                    "name": "source.type.primitive.aqua",
                     "match": "\\b(string|bool|u8|u16|u32|u64|i8|i16|i32|i64|f32|f64)\\b"
                 },
                 {
@@ -31,7 +31,7 @@
                 },
                 {
                     "name": "keyword.control.other.aqua",
-                    "match": "(<<-|<-|->|\\[\\]|\\*|\\?)"
+                    "match": "(<<-|<-|->|\\[\\]|\\*|\\?|=|\\?=)"
                 },
                 {
                     "name": "keyword.control.topology.aqua",
@@ -39,7 +39,7 @@
                 },
                 {
                     "name": "keyword.control.declaration.aqua",
-                    "match": "\\b(|func|service|data|ability|alias|const)\\b"
+                    "match": "\\b(func|service|data|ability|alias|const)\\b"
                 },
                 {
                     "name": "keyword.operator.logical.aqua",
@@ -59,7 +59,7 @@
                 },
                 {
                     "name": "constant.language.numeric.aqua",
-                    "match": "\\b\\d+\\b"
+                    "match": "\\b-?\\d+(\\.\\d*)?\\b"
                 },
                 {
                     "name": "constant.language.boolean.aqua",
@@ -100,59 +100,64 @@
                     "match": "(?<=alias\\s*)[A-Z]\\w*(?=\\s*:)"
                 },
                 {
-                    "//": "Matches type specifier after function arguments and variables",
+                    "//": "Matches type specifiers in declarations",
                     "name": "support.type.specifier",
-                    "match": "(?<=alias.*?:.*?,*\\s**[\\[\\]\\*\\?]*)[A-Z][A-Za-z0-9_]*"
+                    "match": "(?<=:\\s*)(?:\\[\\]|\\*|\\?)*[A-Za-z]\\w*"
                 },
                 {
-                    "//": "Matches type specifier in lambda type aliases",
-                    "name": "support.type.specifier",
-                    "match": "(?<=:\\s*[\\[\\]\\*\\?]*)[A-Z][A-Za-z0-9_]*"
-                },
-                {
-                    "//": "Defines tokens for data types in Aqua (usage). Data types in aqua start with a captial letter and are followed by any space char.",
-                    "name": "support.type.specifier",
-                    "match": "\\b[A-Z][A-Za-z0-9_]+(?=\\s)"
-                },
-                {
-                    "//": "Defines tokens for data and service definitions ('data XXX:')",
+                    "//": "Defines tokens for data definitions ('data XXX:')",
                     "name": "entity.name.type.data.aqua",
                     "match": "\\b(?<=(data)\\s+)[A-Z][A-Za-z0-9_]+(?=:)\\b"
                 },
                 {
-                    "//": "Defines tokens for data and service definitions ('service YYY:')",
+                    "//": "Defines tokens for service definitions ('service YYY:')",
                     "name": "entity.name.type.service.aqua",
-                    "match": "\\b(?<=(service)\\s+)[A-Z][A-Za-z0-9_]+(?=(\\(\"\\w*\"\\))*:)\\b"
+                    "match": "\\b(?<=(service)\\s+)[A-Z][A-Za-z0-9_]+(?=(\\(\"\\w*\"\\))?:)\\b"
                 },
                 {
-                    "//": "Metod name in 'Srv.method(args)' call",
+                    "//": "Defines tokens for ability definitions ('ability YYY:')",
+                    "name": "entity.name.type.ability.aqua",
+                    "match": "\\b(?<=(ability)\\s+)[A-Z][A-Za-z0-9_]+(?=:)\\b"
+                },
+                {
+                    "//": "Method name in 'Ability.field.method(args)'",
                     "name": "support.function.method.call.aqua",
                     "match": "(?<=\\.)[a-z][a-zA-Z0-9_]+(?=\\()"
                 },
                 {
-                    "//": "Service name in 'Srv.method(args)' call",
-                    "name": "support.type.service.aqua",
-                    "match": "\\b[A-Z][A-Za-z0-9_]*(?=\\..*?\\()"
+                    "//": "Ability name in 'Ability.method(args)' or 'Ability.field'",
+                    "name": "support.type.ability.aqua",
+                    "match": "\\b(?<=[^\\.])[A-Za-z]\\w*(?=\\.)"
+                },
+                {
+                    "//": "Field name in 'Ability.field.method(args)' or 'Ability.field'",
+                    "name": "support.other.field.aqua",
+                    "match": "\\b(?<=\\.)(?>[A-Za-z]\\w*)(?!\\s*\\()"
                 },
                 {
                     "//": "Matches function arguments",
-                    "name": "support.variable.parameter.function.arg",
-                    "match": "\\b[a-z]\\w*(?=:)\\b"
+                    "name": "support.variable.parameter.aqua",
+                    "match": "\\b(?<=[,\\(]\\s*)[A-Za-z]\\w*(?=:)\\b"
                 },
                 {
                     "//": "Matches defined variables",
-                    "name": "variable.other",
-                    "match": "\\b[a-z]\\w*(?=\\s*<-)\\b"
+                    "name": "variable.other.definition.aqua",
+                    "match": "\\b[A-Za-z]\\w*(?=\\s*(?:,\\s*[A-Za-z]\\w*)*\\s*(?:<-|=))\\b"
+                },
+                {
+                    "//": "Matches declared variables",
+                    "name": "variable.other.declaration.aqua",
+                    "match": "\\b[A-Za-z]\\w*(?=:)\\b"
                 },
                 {
                     "//": "Matches function definition",
-                    "name": "entity.name.function",
-                    "match": "\\b(?<=func\\s*)[a-z]\\w*(?=\\s*\\()\\b"
+                    "name": "entity.name.function.aqua",
+                    "match": "\\b(?<=func\\s*)[A-Za-z]\\w*(?=\\s*\\()\\b"
                 },
                 {
                     "//": "Matches method definition",
-                    "name": "entity.name.function",
-                    "match": "\\b[a-z]\\w*(?=\\s*\\(.*?\\)\\s*)\\b"
+                    "name": "entity.name.function.method.aqua",
+                    "match": "\\b[A-Za-z]\\w*(?=\\s*\\()\\b"
                 }
             ]
         }
