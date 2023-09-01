@@ -27,7 +27,19 @@
                 },
                 {
                     "name": "keyword.control.other.aqua",
-                    "match": "(<<-|<-|->|\\[\\]|\\*|\\?|=|\\?=)"
+                    "match": "(<<-|<-|->)"
+                },
+                {
+                    "name": "keyword.operator.math.aqua",
+                    "match": "(\\+|-|\/|(?<=[^:]\\s*)\\*|%|\\*\\*|>=|<=|>|<)"
+                },
+                {
+                    "name": "keyword.operator.logical.aqua",
+                    "match": "=="
+                },
+                {
+                    "name": "keyword.control.other.aqua",
+                    "match": "(\\[\\]|\\*|\\?|=|\\?=)"
                 },
                 {
                     "name": "keyword.control.topology.aqua",
@@ -39,15 +51,11 @@
                 },
                 {
                     "name": "keyword.operator.logical.aqua",
-                    "match": "\\b(\\|\\||&&|!|==)\\b"
+                    "match": "(\\|\\||&&|!(?=\\s*\\w))"
                 },
                 {
-                    "name": "keyword.operator.math.aqua",
-                    "match": "\\b(\\+|-|/|(?:[^:]\\s*)\\*|%|\\*\\*)\\b"
-                },
-                {
-                    "name": "keyword.operator.math.cmp.aqua",
-                    "match": "\\b(>|>=|<|<=)\\b"
+                    "name": "keyword.operator.control.aqua",
+                    "match": "(?<=\\w\\s*)!"
                 },
                 {
                     "name": "keyword.control.import.aqua",
