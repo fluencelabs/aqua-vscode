@@ -3,6 +3,9 @@
     "name": "aqua",
     "patterns": [
         {
+            "include": "#comments"
+        },
+        {
             "include": "#keywords"
         },
         {
@@ -10,9 +13,6 @@
         },
         {
             "include": "#strings"
-        },
-        {
-            "include": "#comments"
         },
         {
             "include": "#semantics"
