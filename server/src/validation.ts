@@ -1,10 +1,13 @@
-import type { TextDocument } from 'vscode-languageserver-textdocument';
-import { AquaLSP, ErrorInfo, TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
-import { Diagnostic, DiagnosticSeverity, RemoteConsole } from 'vscode-languageserver/node';
-import type { Settings } from './server';
-import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
 import * as fs from 'fs';
 import * as Path from 'path';
+
+import type { TextDocument } from 'vscode-languageserver-textdocument';
+import { Diagnostic, DiagnosticSeverity, RemoteConsole } from 'vscode-languageserver/node';
+import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
+
+import { AquaLSP, ErrorInfo, TokenLink, WarningInfo } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
+
+import type { Settings } from './server';
 
 function findNearestNodeModules(fileLocation: string, projectLocation: string): string | undefined {
     const relative = Path.relative(projectLocation, fileLocation);
@@ -59,16 +62,15 @@ function getImports(
     // 2. imports from settings
     if (settings.imports && Array.isArray(settings.imports)) {
         const validatedImports: string[] = settings.imports.filter((s) => {
-            if (typeof s != 'string') {
+            const isString = typeof s == 'string';
+            if (!isString) {
                 console.warn(
-                    `Field 'import' in extension settings must have only array of strings. Cannot add import ${JSON.stringify(
-                        s,
-                    )}`,
+                    `Field 'import' in extension settings must have only array of strings. 
+                    Cannot add import ${JSON.stringify(s)}`,
                 );
-                return false;
-            } else {
-                return true;
             }
+
+            return isString;
         });
 
         const absoluteImports = validatedImports.filter((s) => Path.isAbsolute(s));
@@ -105,6 +107,35 @@ function getImports(
     return imports;
 }
 
+function infoToDiagnostic(textDocument: TextDocument, info: ErrorInfo | WarningInfo): Diagnostic {
+    const severity = info.infoType === 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning;
+
+    const diagnostic: Diagnostic = {
+        severity: severity,
+        range: {
+            start: textDocument.positionAt(info.start),
+            end: textDocument.positionAt(info.end),
+        },
+        message: info.message,
+    };
+
+    if (info.location) {
+        const message = info.infoType === 'error' ? 'Compilation error' : 'Compilation warning';
+
+        diagnostic.relatedInformation = [
+            {
+                location: {
+                    uri: info.location,
+                    range: Object.assign({}, diagnostic.range),
+                },
+                message: message,
+            },
+        ];
+    }
+
+    return diagnostic;
+}
+
 export async function compileAqua(
     settings: Settings,
     textDocument: TextDocument,
@@ -115,16 +146,18 @@ export async function compileAqua(
 
     const imports = getImports(settings, textDocument, folders, console);
 
-    // compile aqua and get possible errors
+    // compile aqua and get result
     const result = await AquaLSP.compile(uri, imports);
 
     const diagnostics: Diagnostic[] = [];
+    const links: TokenLink[] = [];
 
-    let links: TokenLink[] = [];
-    let p = Path.parse(textDocument.uri);
-    let linksSearch = [p.dir.replace('file://', '')].concat(imports);
+    const docPath = Path.parse(textDocument.uri);
+    const linksSearch = [docPath.dir.replace('file://', '')].concat(imports);
+
     result.importLocations.map(function (ti) {
-        const path = linksSearch.map((i) => i + '/' + ti.path).find((i) => fs.existsSync(i));
+        const path = linksSearch.map((i) => Path.join(i, ti.path)).find(fs.existsSync);
+
         if (path) {
             links.push({
                 current: ti.current,
@@ -139,33 +172,17 @@ export async function compileAqua(
         }
     });
 
-    if (result.errors) {
-        // Add all errors to Diagnostic
-        result.errors.forEach((err: ErrorInfo) => {
-            const diagnostic: Diagnostic = {
-                severity: DiagnosticSeverity.Error,
-                range: {
-                    start: textDocument.positionAt(err.start),
-                    end: textDocument.positionAt(err.end),
-                },
-                message: err.message,
-            };
-
-            if (err.location) {
-                diagnostic.relatedInformation = [
-                    {
-                        location: {
-                            uri: err.location,
-                            range: Object.assign({}, diagnostic.range),
-                        },
-                        message: 'Compilation error',
-                    },
-                ];
-            }
-
-            diagnostics.push(diagnostic);
-        });
+    if (result.warnings) {
+        // Add all warnings to Diagnostic
+        diagnostics.push(...result.warnings.map((w) => infoToDiagnostic(textDocument, w)));
     }
 
-    return [diagnostics, result.locations.concat(links)];
+    if (result.errors) {
+        // Add all errors to Diagnostic
+        diagnostics.push(...result.errors.map((e) => infoToDiagnostic(textDocument, e)));
+    }
+
+    const locations = result.locations.concat(links);
+
+    return [diagnostics, locations];
 }
