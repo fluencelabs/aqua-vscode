@@ -6,15 +6,15 @@ import {
     TextDocuments,
     TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
-
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
-
 import { Position, TextDocument } from 'vscode-languageserver-textdocument';
-import { compileAqua } from './validation';
 import type { DefinitionParams, Location } from 'vscode-languageserver';
+
 import type { TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 
-// Create a connection for the server, using Node's IPC as a transport.
+import { compileAqua } from './validation';
+
+// Create a connection to the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 const connection = createConnection(ProposedFeatures.all);
 
@@ -31,60 +31,59 @@ export interface Settings {
 }
 
 function searchDefinition(position: Position, name: string, locations: TokenLink[]): TokenLink | undefined {
-    return locations.find((token) => {
-        return (
+    return locations.find(
+        (token) =>
             token.current.name == name &&
             token.current.startLine <= position.line &&
             token.current.startCol <= position.character &&
             token.current.endLine >= position.line &&
-            token.current.endCol >= position.character
-        );
-    });
+            token.current.endCol >= position.character,
+    );
 }
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
 const defaultSettings: Settings = { imports: [], enableLegacyAutoImportSearch: false };
 let globalSettings: Settings = defaultSettings;
 
 // Cache the settings of all open documents
 const documentSettings: Map<string, Settings> = new Map();
 
+// Cache all locations of all open documents
 const allLocations: Map<string, TokenLink[]> = new Map();
 
 async function onDefinition({ textDocument, position }: DefinitionParams): Promise<Location[]> {
     connection.console.log('onDefinition event');
     const doc = documents.get(textDocument.uri);
+    const currentLocations = allLocations.get(textDocument.uri);
 
-    if (doc) {
-        const currentLocations = allLocations.get(textDocument.uri);
-        if (currentLocations) {
-            const token = searchDefinition(position, doc.uri.replace('file://', ''), currentLocations);
-            connection.console.log('find token: ' + JSON.stringify(token));
-            if (token) {
-                const definition = token.definition;
-
-                return [
-                    {
-                        uri: 'file://' + definition.name,
-                        range: {
-                            start: {
-                                line: definition.startLine,
-                                character: definition.startCol,
-                            },
-                            end: {
-                                line: definition.endLine,
-                                character: definition.endCol,
-                            },
-                        },
-                    },
-                ];
-            }
-        }
+    if (doc == undefined || currentLocations == undefined) {
+        return [];
     }
 
-    return [];
+    const token = searchDefinition(position, doc.uri.replace('file://', ''), currentLocations);
+    connection.console.log('found token: ' + JSON.stringify(token));
+
+    if (token == undefined) {
+        return [];
+    }
+
+    const definition = token.definition;
+
+    return [
+        {
+            uri: 'file://' + definition.name,
+            range: {
+                start: {
+                    line: definition.startLine,
+                    character: definition.startCol,
+                },
+                end: {
+                    line: definition.endLine,
+                    character: definition.endCol,
+                },
+            },
+        },
+    ];
 }
 
 connection.onDefinition(onDefinition);
@@ -102,6 +101,7 @@ async function getDocumentSettings(resource: string): Promise<Settings> {
     if (!hasConfigurationCapability) {
         return Promise.resolve(globalSettings);
     }
+
     let result = await documentSettings.get(resource);
     if (!result) {
         result = await connection.workspace.getConfiguration({
@@ -113,6 +113,7 @@ async function getDocumentSettings(resource: string): Promise<Settings> {
         }
         documentSettings.set(resource, result);
     }
+
     return result;
 }
 
