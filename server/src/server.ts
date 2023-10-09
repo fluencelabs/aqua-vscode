@@ -1,5 +1,6 @@
 import {
     createConnection,
+    DidChangeConfigurationNotification,
     InitializeParams,
     InitializeResult,
     ProposedFeatures,
@@ -89,9 +90,13 @@ async function onDefinition({ textDocument, position }: DefinitionParams): Promi
 connection.onDefinition(onDefinition);
 
 connection.onDidChangeConfiguration((change) => {
-    connection.console.log(change.settings);
+    connection.console.log(`onDidChangeConfiguration event ${JSON.stringify(change)}`);
 
-    globalSettings = <Settings>(change.settings.aquaSettings || defaultSettings);
+    if (hasConfigurationCapability) {
+        documentSettings.clear();
+    } else {
+        globalSettings = <Settings>(change.settings.aquaSettings || defaultSettings);
+    }
 
     // Revalidate all open text documents
     documents.all().forEach(validateDocument);
@@ -140,6 +145,7 @@ connection.onInitialize((params: InitializeParams) => {
             definitionProvider: true,
         },
     };
+
     if (hasWorkspaceFolderCapability) {
         result.capabilities.workspace = {
             workspaceFolders: {
@@ -147,15 +153,25 @@ connection.onInitialize((params: InitializeParams) => {
             },
         };
     }
+
     return result;
 });
 
 connection.onInitialized(() => {
     connection.console.log('onInitialized event');
-    connection.workspace.onDidChangeWorkspaceFolders((event) => {
-        folders = folders.concat(event.added);
-        folders = folders.filter((f) => !event.removed.includes(f));
-    });
+
+    if (hasConfigurationCapability) {
+        connection.client.register(DidChangeConfigurationNotification.type, {
+            section: 'aquaSettings',
+        });
+    }
+
+    if (hasWorkspaceFolderCapability) {
+        connection.workspace.onDidChangeWorkspaceFolders((event) => {
+            folders = folders.concat(event.added);
+            folders = folders.filter((f) => !event.removed.includes(f));
+        });
+    }
 });
 
 documents.onDidSave(async (change) => {
@@ -170,6 +186,8 @@ documents.onDidOpen(async (change) => {
 
 async function validateDocument(textDocument: TextDocument): Promise<void> {
     const settings = await getDocumentSettings(textDocument.uri);
+
+    connection.console.log(`validateDocument ${textDocument.uri} with settings ${JSON.stringify(settings)}`);
 
     const [diagnostics, locations] = await compileAqua(settings, textDocument, folders, connection.console);
 
