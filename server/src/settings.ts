@@ -8,13 +8,9 @@ export interface Settings {
 }
 
 function addImports(settings: Settings, imports?: string[]): Settings {
-    if (!imports || imports.length === 0) {
-        return settings;
-    }
-
     return {
         ...settings,
-        imports: [...settings.imports, ...imports],
+        imports: [...settings.imports, ...(imports ?? [])],
     };
 }
 
