@@ -29,7 +29,7 @@ export class SettingsManager {
     private globalSettings: Settings = this.defaultSettings;
     private documentSettings: Map<string, Settings> = new Map();
 
-    private additionalImports: string[] | undefined;
+    private additionalImports: string[] = [];
     private additionalImportsLastUpdated = 0;
     private additionalImportsUpdateRequested = true;
 
