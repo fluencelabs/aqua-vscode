@@ -73,6 +73,12 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Do not look for extra imports"
+                },
+                "aquaSettings.fluencePath": {
+                    "scope": "resource",
+                    "type": ["string", "null"],
+                    "default": null,
+                    "description": "Path to fluence CLI executable"
                 }
             }
         }

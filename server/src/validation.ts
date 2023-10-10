@@ -7,7 +7,7 @@ import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
 
 import { AquaLSP, ErrorInfo, TokenLink, WarningInfo } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 
-import type { Settings } from './server';
+import type { Settings } from './settings';
 
 function findNearestNodeModules(fileLocation: string, projectLocation: string): string | undefined {
     const relative = Path.relative(projectLocation, fileLocation);
