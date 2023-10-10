@@ -62,19 +62,23 @@
             "type": "object",
             "title": "Aqua",
             "properties": {
-                "aquaSettings": {
-                    "imports": {
-                        "scope": "resource",
-                        "type": "array",
-                        "default": [],
-                        "description": "Adds imports for aqua file or project"
-                    },
-                    "enableLegacyAutoImportSearch": {
-                        "scope": "resource",
-                        "type": "boolean",
-                        "default": false,
-                        "description": "Do not look for extra imports"
-                    }
+                "aquaSettings.imports": {
+                    "scope": "resource",
+                    "type": "array",
+                    "default": [],
+                    "description": "Adds imports for aqua file or project"
+                },
+                "aquaSettings.enableLegacyAutoImportSearch": {
+                    "scope": "resource",
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Do not look for extra imports"
+                },
+                "aquaSettings.fluencePath": {
+                    "scope": "resource",
+                    "type": ["string", "null"],
+                    "default": null,
+                    "description": "Path to fluence CLI executable"
                 }
             }
         }

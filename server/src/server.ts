@@ -1,5 +1,7 @@
 import {
     createConnection,
+    DiagnosticSeverity,
+    DidChangeConfigurationNotification,
     InitializeParams,
     InitializeResult,
     ProposedFeatures,
@@ -13,6 +15,8 @@ import type { DefinitionParams, Location } from 'vscode-languageserver';
 import type { TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 
 import { compileAqua } from './validation';
+import { FluenceCli } from './cli';
+import { Settings, SettingsManager } from './settings';
 
 // Create a connection to the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -25,10 +29,13 @@ let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let folders: WorkspaceFolder[] = [];
 
-export interface Settings {
-    imports: string[];
-    enableLegacyAutoImportSearch: boolean;
+function createSettingsManager(cliPath?: string, defaultSettings?: Settings): SettingsManager {
+    const cli = new FluenceCli(cliPath);
+    const configuration = hasConfigurationCapability ? connection.workspace : undefined;
+    return new SettingsManager(cli, configuration, defaultSettings);
 }
+
+let documentSettings = createSettingsManager();
 
 function searchDefinition(position: Position, name: string, locations: TokenLink[]): TokenLink | undefined {
     return locations.find(
@@ -40,13 +47,6 @@ function searchDefinition(position: Position, name: string, locations: TokenLink
             token.current.endCol >= position.character,
     );
 }
-
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-const defaultSettings: Settings = { imports: [], enableLegacyAutoImportSearch: false };
-let globalSettings: Settings = defaultSettings;
-
-// Cache the settings of all open documents
-const documentSettings: Map<string, Settings> = new Map();
 
 // Cache all locations of all open documents
 const allLocations: Map<string, TokenLink[]> = new Map();
@@ -89,37 +89,17 @@ async function onDefinition({ textDocument, position }: DefinitionParams): Promi
 connection.onDefinition(onDefinition);
 
 connection.onDidChangeConfiguration((change) => {
-    connection.console.log(change.settings);
+    connection.console.log(`onDidChangeConfiguration event ${JSON.stringify(change)}`);
 
-    globalSettings = <Settings>(change.settings.aquaSettings || defaultSettings);
+    documentSettings = createSettingsManager(change.settings.aquaSettings.fluencePath, change.settings.aquaSettings);
 
     // Revalidate all open text documents
     documents.all().forEach(validateDocument);
 });
 
-async function getDocumentSettings(resource: string): Promise<Settings> {
-    if (!hasConfigurationCapability) {
-        return Promise.resolve(globalSettings);
-    }
-
-    let result = await documentSettings.get(resource);
-    if (!result) {
-        result = await connection.workspace.getConfiguration({
-            scopeUri: resource,
-            section: 'aquaSettings',
-        });
-        if (!result) {
-            result = defaultSettings;
-        }
-        documentSettings.set(resource, result);
-    }
-
-    return result;
-}
-
 // Only keep settings for open documents
 documents.onDidClose((e) => {
-    documentSettings.delete(e.document.uri);
+    documentSettings.removeDocumentSettings(e.document.uri);
 });
 
 connection.onInitialize((params: InitializeParams) => {
@@ -127,7 +107,6 @@ connection.onInitialize((params: InitializeParams) => {
     const capabilities = params.capabilities;
 
     hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration);
-
     hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
 
     if (params.workspaceFolders) {
@@ -140,6 +119,7 @@ connection.onInitialize((params: InitializeParams) => {
             definitionProvider: true,
         },
     };
+
     if (hasWorkspaceFolderCapability) {
         result.capabilities.workspace = {
             workspaceFolders: {
@@ -147,15 +127,25 @@ connection.onInitialize((params: InitializeParams) => {
             },
         };
     }
+
     return result;
 });
 
-connection.onInitialized(() => {
+connection.onInitialized(async () => {
     connection.console.log('onInitialized event');
-    connection.workspace.onDidChangeWorkspaceFolders((event) => {
-        folders = folders.concat(event.added);
-        folders = folders.filter((f) => !event.removed.includes(f));
-    });
+
+    if (hasConfigurationCapability) {
+        connection.client.register(DidChangeConfigurationNotification.type, {
+            section: 'aquaSettings',
+        });
+    }
+
+    if (hasWorkspaceFolderCapability) {
+        connection.workspace.onDidChangeWorkspaceFolders((event) => {
+            folders = folders.concat(event.added);
+            folders = folders.filter((f) => !event.removed.includes(f));
+        });
+    }
 });
 
 documents.onDidSave(async (change) => {
@@ -169,7 +159,9 @@ documents.onDidOpen(async (change) => {
 });
 
 async function validateDocument(textDocument: TextDocument): Promise<void> {
-    const settings = await getDocumentSettings(textDocument.uri);
+    const settings = await documentSettings.getDocumentSettings(textDocument.uri);
+
+    connection.console.log(`validateDocument ${textDocument.uri} with settings ${JSON.stringify(settings)}`);
 
     const [diagnostics, locations] = await compileAqua(settings, textDocument, folders, connection.console);
 
@@ -177,6 +169,11 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     // Send the computed diagnostics to VSCode.
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+
+    // Request additional imports update if there are errors
+    if (diagnostics.some((d) => d.severity === DiagnosticSeverity.Error)) {
+        documentSettings.requestImportsUpdate();
+    }
 }
 
 // Make the text document manager listen on the connection
