@@ -30,7 +30,7 @@ jobs:
               run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
 
             - name: Checkout repository
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
 
             ### Calculate FINAL_VERSION
             - name: Install jq
