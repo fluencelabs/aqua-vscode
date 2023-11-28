@@ -11,7 +11,7 @@
         "url": "https://github.com/fluencelabs/aqua"
     },
     "dependencies": {
-        "@fluencelabs/aqua-language-server-api": "0.12.3",
+        "@fluencelabs/aqua-language-server-api": "file:../../aqua/language-server/language-server-npm",
         "global-dirs": "^3.0.0",
         "vscode-languageserver": "^7.0.0",
         "vscode-languageserver-textdocument": "^1.0.4"

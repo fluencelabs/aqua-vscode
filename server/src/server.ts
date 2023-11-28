@@ -10,9 +10,10 @@ import {
 } from 'vscode-languageserver/node';
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
 import { Position, TextDocument } from 'vscode-languageserver-textdocument';
-import type { DefinitionParams, Location } from 'vscode-languageserver';
-
+import type { DefinitionParams, HoverParams, Location } from 'vscode-languageserver';
 import type { TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
+import type { Hover, MarkupContent } from 'vscode-languageserver';
+import { MarkupKind } from 'vscode-languageserver';
 
 import { compileAqua } from './validation';
 import { FluenceCli } from './cli';
@@ -50,6 +51,33 @@ function searchDefinition(position: Position, name: string, locations: TokenLink
 
 // Cache all locations of all open documents
 const allLocations: Map<string, TokenLink[]> = new Map();
+
+function onHover({ textDocument, position }: HoverParams): Hover | null {
+    console.log(textDocument.uri);
+    console.log(position);
+
+    const doc = documents.get(textDocument.uri);
+
+    if (doc) {
+        const currentLocations = allLocations.get(textDocument.uri);
+        if (currentLocations) {
+            const token = searchDefinition(position, doc.uri.replace('file://', ''), currentLocations);
+            connection.console.log('find token: ' + JSON.stringify(token));
+            if (token) {
+                const content: MarkupContent = { kind: MarkupKind.PlainText, value: token.definition.name };
+
+                const hover: Hover = { contents: content };
+
+                return hover;
+            }
+        }
+    }
+
+    return null;
+}
+
+connection.onHover(onHover);
+connection.console.log('hover registered');
 
 async function onDefinition({ textDocument, position }: DefinitionParams): Promise<Location[]> {
     connection.console.log('onDefinition event');
@@ -117,6 +145,7 @@ connection.onInitialize((params: InitializeParams) => {
         capabilities: {
             textDocumentSync: TextDocumentSyncKind.Full,
             definitionProvider: true,
+            hoverProvider: true,
         },
     };
 
