@@ -52,7 +52,7 @@ jobs:
                   yarn version --new-version ${{ env.FINAL_VERSION }} --no-git-tag-version
 
             ### Pack vsix package
-            - uses: actions/setup-node@v1
+            - uses: actions/setup-node@v4
               with:
                   node-version: '15'
                   registry-url: 'https://registry.npmjs.org'
