@@ -5,7 +5,13 @@ import type { TextDocument } from 'vscode-languageserver-textdocument';
 import { Diagnostic, DiagnosticSeverity, RemoteConsole } from 'vscode-languageserver/node';
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
 
-import { AquaLSP, ErrorInfo, TokenLink, WarningInfo } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
+import {
+    AquaLSP,
+    ErrorInfo,
+    TokenInfo,
+    TokenLink,
+    WarningInfo,
+} from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 
 import type { Settings } from './settings';
 
@@ -141,7 +147,7 @@ export async function compileAqua(
     textDocument: TextDocument,
     folders: WorkspaceFolder[],
     console: RemoteConsole,
-): Promise<[Diagnostic[], TokenLink[]]> {
+): Promise<[Diagnostic[], TokenLink[], TokenInfo[]]> {
     const uri = textDocument.uri.replace('file://', '');
 
     const imports = getImports(settings, textDocument, folders, console);
@@ -184,5 +190,5 @@ export async function compileAqua(
 
     const locations = result.locations.concat(links);
 
-    return [diagnostics, locations];
+    return [diagnostics, locations, result.tokens];
 }

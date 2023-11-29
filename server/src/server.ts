@@ -11,7 +11,7 @@ import {
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
 import { Position, TextDocument } from 'vscode-languageserver-textdocument';
 import type { DefinitionParams, HoverParams, Location } from 'vscode-languageserver';
-import type { TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
+import type { TokenInfo, TokenLink, TokenLocation } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 import type { Hover, MarkupContent } from 'vscode-languageserver';
 import { MarkupKind } from 'vscode-languageserver';
 
@@ -38,19 +38,57 @@ function createSettingsManager(cliPath?: string, defaultSettings?: Settings): Se
 
 let documentSettings = createSettingsManager();
 
-function searchDefinition(position: Position, name: string, locations: TokenLink[]): TokenLink | undefined {
-    return locations.find(
-        (token) =>
-            token.current.name == name &&
-            token.current.startLine <= position.line &&
-            token.current.startCol <= position.character &&
-            token.current.endLine >= position.line &&
-            token.current.endCol >= position.character,
+function isToken(location: TokenLocation, position: Position, name: string) {
+    return (
+        location.name == name &&
+        location.startLine <= position.line &&
+        location.startCol <= position.character &&
+        location.endLine >= position.line &&
+        location.endCol >= position.character
     );
 }
 
+function isTokenByLocation(location: TokenLocation, locationRight: TokenLocation) {
+    return (
+        location.startLine <= locationRight.startLine &&
+        location.startCol <= locationRight.startCol &&
+        location.endLine >= locationRight.endLine &&
+        location.endCol >= locationRight.endCol
+    );
+}
+
+function searchDefinition(position: Position, name: string, locations: TokenLink[]): TokenLink | undefined {
+    return locations.find((token) => isToken(token.current, position, name));
+}
+
+function searchInfo(
+    position: Position,
+    name: string,
+    tokens: TokenInfo[],
+    locations: TokenLink[],
+): TokenInfo | undefined {
+    const tokenInfo = tokens.find((token) => isToken(token.location, position, name));
+
+    if (tokenInfo) {
+        return tokenInfo;
+    }
+
+    const link = searchDefinition(position, name, locations);
+
+    if (link) {
+        return tokens.find((token) => isTokenByLocation(token.location, link.definition));
+    } else {
+        return undefined;
+    }
+}
+
+interface PageInfo {
+    links: TokenLink[];
+    tokens: TokenInfo[];
+}
+
 // Cache all locations of all open documents
-const allLocations: Map<string, TokenLink[]> = new Map();
+const allPageInfo: Map<string, PageInfo> = new Map();
 
 function onHover({ textDocument, position }: HoverParams): Hover | null {
     console.log(textDocument.uri);
@@ -59,12 +97,12 @@ function onHover({ textDocument, position }: HoverParams): Hover | null {
     const doc = documents.get(textDocument.uri);
 
     if (doc) {
-        const currentLocations = allLocations.get(textDocument.uri);
-        if (currentLocations) {
-            const token = searchDefinition(position, doc.uri.replace('file://', ''), currentLocations);
+        const currentPage = allPageInfo.get(textDocument.uri);
+        if (currentPage) {
+            const token = searchInfo(position, doc.uri.replace('file://', ''), currentPage.tokens, currentPage.links);
             connection.console.log('find token: ' + JSON.stringify(token));
             if (token) {
-                const content: MarkupContent = { kind: MarkupKind.PlainText, value: token.definition.name };
+                const content: MarkupContent = { kind: MarkupKind.PlainText, value: token.type };
 
                 const hover: Hover = { contents: content };
 
@@ -82,13 +120,13 @@ connection.console.log('hover registered');
 async function onDefinition({ textDocument, position }: DefinitionParams): Promise<Location[]> {
     connection.console.log('onDefinition event');
     const doc = documents.get(textDocument.uri);
-    const currentLocations = allLocations.get(textDocument.uri);
+    const currentPage = allPageInfo.get(textDocument.uri);
 
-    if (doc == undefined || currentLocations == undefined) {
+    if (doc == undefined || currentPage == undefined) {
         return [];
     }
 
-    const token = searchDefinition(position, doc.uri.replace('file://', ''), currentLocations);
+    const token = searchDefinition(position, doc.uri.replace('file://', ''), currentPage.links);
     connection.console.log('found token: ' + JSON.stringify(token));
 
     if (token == undefined) {
@@ -192,9 +230,9 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     connection.console.log(`validateDocument ${textDocument.uri} with settings ${JSON.stringify(settings)}`);
 
-    const [diagnostics, locations] = await compileAqua(settings, textDocument, folders, connection.console);
+    const [diagnostics, locations, tokenInfos] = await compileAqua(settings, textDocument, folders, connection.console);
 
-    allLocations.set(textDocument.uri, locations);
+    allPageInfo.set(textDocument.uri, { links: locations, tokens: tokenInfos });
 
     // Send the computed diagnostics to VSCode.
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
