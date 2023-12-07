@@ -40,7 +40,7 @@ class DocumentInfo {
         // Update additional imports not more often than once in 5 seconds
         // and only if there is a request to update
         const isUpdateReady = Date.now() - this.importsLastUpdated > 5000;
-        return delayed && this.importsUpdateRequested;
+        return isUpdateReady && this.importsUpdateRequested;
     }
 
     updateImports(imports: string[]) {
