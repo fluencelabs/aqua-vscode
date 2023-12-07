@@ -33,7 +33,7 @@ export class FluenceCli {
         const cmd = `${this.cliPath} ${args.join(' ')}`;
 
         return new Promise((resolve, reject) => {
-            exec(cmd, (err, stdout, _) => {
+            exec(cmd, { cwd }, (err, stdout, _) => {
                 if (err) {
                     reject(err);
                 } else
