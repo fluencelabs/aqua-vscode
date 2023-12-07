@@ -28,7 +28,7 @@ class DocumentInfo {
     getSettings(): Settings {
         return {
             ...this.settings,
-            imports: [...this.settings.imports, ...(this.imports ?? [])],
+            imports: [...this.settings.imports, ...this.imports],
         };
     }
 
