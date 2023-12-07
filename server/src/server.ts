@@ -172,7 +172,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     // Request additional imports update if there are errors
     if (diagnostics.some((d) => d.severity === DiagnosticSeverity.Error)) {
-        documentSettings.requestImportsUpdate();
+        documentSettings.requestImportsUpdate(textDocument.uri);
     }
 }
 
