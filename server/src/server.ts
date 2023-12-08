@@ -9,14 +9,15 @@ import {
     TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
-import { Position, TextDocument } from 'vscode-languageserver-textdocument';
-import type { DefinitionParams, Location } from 'vscode-languageserver';
-
-import type { TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import type { DefinitionParams, Hover, HoverParams, Location, MarkupContent } from 'vscode-languageserver';
+import { MarkupKind } from 'vscode-languageserver';
+import type { TokenInfo, TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 
 import { compileAqua } from './validation';
 import { FluenceCli } from './cli';
 import { Settings, SettingsManager } from './settings';
+import { searchDefinition, searchInfo } from './search';
 
 // Create a connection to the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -37,37 +38,52 @@ function createSettingsManager(cliPath?: string, defaultSettings?: Settings): Se
 
 let documentSettings = createSettingsManager();
 
-function searchDefinition(position: Position, name: string, locations: TokenLink[]): TokenLink | undefined {
-    return locations.find(
-        (token) =>
-            token.current.name == name &&
-            token.current.startLine <= position.line &&
-            token.current.startCol <= position.character &&
-            token.current.endLine >= position.line &&
-            token.current.endCol >= position.character,
-    );
+interface PageInfo {
+    links: TokenLink[];
+    tokens: TokenInfo[];
 }
 
 // Cache all locations of all open documents
-const allLocations: Map<string, TokenLink[]> = new Map();
+const allPageInfo: Map<string, PageInfo> = new Map();
+
+function onHover({ textDocument, position }: HoverParams): Hover | null {
+    const doc = documents.get(textDocument.uri);
+    const currentPage = allPageInfo.get(textDocument.uri);
+
+    if (doc == undefined || currentPage == undefined) {
+        throw new Error(`Cannot find compilation info about page: ${textDocument.uri}`);
+    }
+
+    const token = searchInfo(position, doc.uri.replace('file://', ''), currentPage.tokens, currentPage.links);
+    if (token) {
+        const content: MarkupContent = { kind: MarkupKind.PlainText, value: token.type };
+
+        const hover: Hover = { contents: content };
+
+        return hover;
+    }
+
+    return null;
+}
+
+connection.onHover(onHover);
 
 async function onDefinition({ textDocument, position }: DefinitionParams): Promise<Location[]> {
     connection.console.log('onDefinition event');
     const doc = documents.get(textDocument.uri);
-    const currentLocations = allLocations.get(textDocument.uri);
+    const currentPage = allPageInfo.get(textDocument.uri);
 
-    if (doc == undefined || currentLocations == undefined) {
+    if (doc == undefined || currentPage == undefined) {
         return [];
     }
 
-    const token = searchDefinition(position, doc.uri.replace('file://', ''), currentLocations);
-    connection.console.log('found token: ' + JSON.stringify(token));
+    const tokenLink = searchDefinition(position, doc.uri.replace('file://', ''), currentPage.links);
 
-    if (token == undefined) {
+    if (tokenLink == undefined) {
         return [];
     }
 
-    const definition = token.definition;
+    const definition = tokenLink.definition;
 
     return [
         {
@@ -117,6 +133,7 @@ connection.onInitialize((params: InitializeParams) => {
         capabilities: {
             textDocumentSync: TextDocumentSyncKind.Full,
             definitionProvider: true,
+            hoverProvider: true,
         },
     };
 
@@ -163,9 +180,9 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     connection.console.log(`validateDocument ${textDocument.uri} with settings ${JSON.stringify(settings)}`);
 
-    const [diagnostics, locations] = await compileAqua(settings, textDocument, folders, connection.console);
+    const [diagnostics, locations, tokenInfos] = await compileAqua(settings, textDocument, folders, connection.console);
 
-    allLocations.set(textDocument.uri, locations);
+    allPageInfo.set(textDocument.uri, { links: locations, tokens: tokenInfos });
 
     // Send the computed diagnostics to VSCode.
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
