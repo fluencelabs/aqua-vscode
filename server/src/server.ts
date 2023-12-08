@@ -29,10 +29,10 @@ let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let folders: WorkspaceFolder[] = [];
 
-function createSettingsManager(cliPath?: string, defaultSettings?: Settings): SettingsManager {
+function createSettingsManager(cliPath?: string, cliCallDelay?: number, defaultSettings?: Settings): SettingsManager {
     const cli = new FluenceCli(cliPath);
     const configuration = hasConfigurationCapability ? connection.workspace : undefined;
-    return new SettingsManager(cli, configuration, defaultSettings);
+    return new SettingsManager({ cli, cliCallDelay, defaultSettings }, configuration);
 }
 
 let documentSettings = createSettingsManager();
@@ -91,7 +91,11 @@ connection.onDefinition(onDefinition);
 connection.onDidChangeConfiguration((change) => {
     connection.console.log(`onDidChangeConfiguration event ${JSON.stringify(change)}`);
 
-    documentSettings = createSettingsManager(change.settings.aquaSettings.fluencePath, change.settings.aquaSettings);
+    documentSettings = createSettingsManager(
+        change.settings.aquaSettings.fluencePath,
+        change.settings.aquaSettings.fluenceCallDelay,
+        change.settings.aquaSettings,
+    );
 
     // Revalidate all open text documents
     documents.all().forEach(validateDocument);

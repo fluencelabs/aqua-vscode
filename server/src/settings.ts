@@ -36,10 +36,10 @@ class DocumentInfo {
         this.importsUpdateRequested = true;
     }
 
-    isImportsUpdateNeeded(): boolean {
-        // Update additional imports not more often than once in 5 seconds
+    isImportsUpdateNeeded(delay?: number): boolean {
+        // Update additional imports not more often than once `delay`
         // and only if there is a request to update
-        const isUpdateReady = Date.now() - this.importsLastUpdated > 5000;
+        const isUpdateReady = delay ? Date.now() - this.importsLastUpdated > delay : true;
         return isUpdateReady && this.importsUpdateRequested;
     }
 
@@ -48,6 +48,12 @@ class DocumentInfo {
         this.importsLastUpdated = Date.now();
         this.importsUpdateRequested = false;
     }
+}
+
+export interface SettingsManagerConfig {
+    cli: FluenceCli;
+    cliCallDelay?: number | undefined;
+    defaultSettings?: Settings | undefined;
 }
 
 /**
@@ -61,13 +67,17 @@ export class SettingsManager {
     private documents: Map<string, DocumentInfo> = new Map();
 
     private readonly cli: FluenceCli;
+    private readonly cliCallDelay: number | undefined;
     private readonly configuration: Configuration | undefined;
 
-    constructor(cli: FluenceCli, configuration?: Configuration, defaultSettings?: Settings) {
-        this.cli = cli;
+    constructor(config: SettingsManagerConfig, configuration?: Configuration) {
+        this.cli = config.cli;
         this.configuration = configuration;
-        if (defaultSettings) {
-            this.defaultSettings = defaultSettings;
+        if (config.defaultSettings) {
+            this.defaultSettings = config.defaultSettings;
+        }
+        if (config.cliCallDelay) {
+            this.cliCallDelay = config.cliCallDelay;
         }
     }
 
@@ -115,7 +125,7 @@ export class SettingsManager {
             info = new DocumentInfo(settings);
         }
 
-        if (info.isImportsUpdateNeeded()) {
+        if (info.isImportsUpdateNeeded(this.cliCallDelay)) {
             const path = URI.parse(uri).fsPath;
             const imports = await this.cli.imports(path);
             info.updateImports(imports);

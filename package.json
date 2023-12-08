@@ -82,6 +82,12 @@
                     ],
                     "default": null,
                     "description": "Path to fluence CLI executable"
+                },
+                "aquaSettings.fluenceCallDelay": {
+                    "scope": "resource",
+                    "type": "number",
+                    "default": 5000,
+                    "description": "Minimal delay (ms) between calls to fluence CLI (for one file)"
                 }
             }
         }
