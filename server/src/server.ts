@@ -55,7 +55,6 @@ function onHover({ textDocument, position }: HoverParams): Hover | null {
     }
 
     const token = searchInfo(position, doc.uri.replace('file://', ''), currentPage.tokens, currentPage.links);
-    connection.console.info('find token: ' + JSON.stringify(token));
     if (token) {
         const content: MarkupContent = { kind: MarkupKind.PlainText, value: token.type };
 
@@ -79,13 +78,12 @@ async function onDefinition({ textDocument, position }: DefinitionParams): Promi
     }
 
     const tokenLink = searchDefinition(position, doc.uri.replace('file://', ''), currentPage.links);
-    connection.console.info('found token: ' + JSON.stringify(token));
 
-    if (token == undefined) {
+    if (tokenLink == undefined) {
         return [];
     }
 
-    const definition = token.definition;
+    const definition = tokenLink.definition;
 
     return [
         {

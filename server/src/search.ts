@@ -41,8 +41,8 @@ export function searchInfo(
 
     const tokenLink = searchDefinition(position, name, locations);
 
-    if (link) {
-        return tokens.find((token) => isTokenByLocation(token.location, link.definition));
+    if (tokenLink) {
+        return tokens.find((token) => isTokenByLocation(token.location, tokenLink.definition));
     } else {
         return undefined;
     }
