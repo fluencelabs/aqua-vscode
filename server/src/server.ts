@@ -51,8 +51,7 @@ function onHover({ textDocument, position }: HoverParams): Hover | null {
     const currentPage = allPageInfo.get(textDocument.uri);
 
     if (doc == undefined || currentPage == undefined) {
-        connection.console.error(`Cannot find compilation info about page: ${textDocument.uri}`);
-        return null;
+        throw new Error(`Cannot find compilation info about page: ${textDocument.uri}`);
     }
 
     const token = searchInfo(position, doc.uri.replace('file://', ''), currentPage.tokens, currentPage.links);
