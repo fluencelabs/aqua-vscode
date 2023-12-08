@@ -79,7 +79,7 @@ async function onDefinition({ textDocument, position }: DefinitionParams): Promi
         return [];
     }
 
-    const token = searchDefinition(position, doc.uri.replace('file://', ''), currentPage.links);
+    const tokenLink = searchDefinition(position, doc.uri.replace('file://', ''), currentPage.links);
     connection.console.info('found token: ' + JSON.stringify(token));
 
     if (token == undefined) {
