@@ -1,17 +1,59 @@
 import type { Configuration } from 'vscode-languageserver/lib/common/configuration';
+import { URI } from 'vscode-uri';
 
 import type { FluenceCli } from './cli';
 
+type Imports = string[];
+
 export interface Settings {
-    imports: string[];
+    imports: Imports;
     enableLegacyAutoImportSearch: boolean;
 }
 
-function addImports(settings: Settings, imports?: string[]): Settings {
-    return {
-        ...settings,
-        imports: [...settings.imports, ...(imports ?? [])],
-    };
+/**
+ * Document info stored in `SettingsManager` cache
+ */
+class DocumentInfo {
+    /* Settings from configuration (or default) */
+    private settings: Settings;
+    /* Additional imports from CLI */
+    private imports: Imports = [];
+    private importsLastUpdated = 0;
+    private importsUpdateRequested = true;
+
+    constructor(settings: Settings) {
+        this.settings = settings;
+    }
+
+    getSettings(): Settings {
+        return {
+            ...this.settings,
+            imports: [...this.settings.imports, ...this.imports],
+        };
+    }
+
+    requestImportsUpdate() {
+        this.importsUpdateRequested = true;
+    }
+
+    isImportsUpdateNeeded(delay?: number): boolean {
+        // Update additional imports not more often than once `delay`
+        // and only if there is a request to update
+        const isUpdateReady = delay ? Date.now() - this.importsLastUpdated > delay : true;
+        return isUpdateReady && this.importsUpdateRequested;
+    }
+
+    updateImports(imports: string[]) {
+        this.imports = imports;
+        this.importsLastUpdated = Date.now();
+        this.importsUpdateRequested = false;
+    }
+}
+
+export interface SettingsManagerConfig {
+    cli: FluenceCli;
+    cliCallDelay?: number | undefined;
+    defaultSettings?: Settings | undefined;
 }
 
 /**
@@ -22,21 +64,20 @@ export class SettingsManager {
         imports: [],
         enableLegacyAutoImportSearch: false,
     };
-    private globalSettings: Settings = this.defaultSettings;
-    private documentSettings: Map<string, Settings> = new Map();
-
-    private additionalImports: string[] = [];
-    private additionalImportsLastUpdated = 0;
-    private additionalImportsUpdateRequested = true;
+    private documents: Map<string, DocumentInfo> = new Map();
 
     private readonly cli: FluenceCli;
+    private readonly cliCallDelay: number | undefined;
     private readonly configuration: Configuration | undefined;
 
-    constructor(cli: FluenceCli, configuration?: Configuration, defaultSettings?: Settings) {
-        this.cli = cli;
+    constructor(config: SettingsManagerConfig, configuration?: Configuration) {
+        this.cli = config.cli;
         this.configuration = configuration;
-        if (defaultSettings) {
-            this.defaultSettings = defaultSettings;
+        if (config.defaultSettings) {
+            this.defaultSettings = config.defaultSettings;
+        }
+        if (config.cliCallDelay) {
+            this.cliCallDelay = config.cliCallDelay;
         }
     }
 
@@ -47,13 +88,9 @@ export class SettingsManager {
      * @returns Settings for the document
      */
     async getDocumentSettings(uri: string): Promise<Settings> {
-        await this.tryUpdateDocumentSettings(uri);
+        const info = await this.updateDocument(uri);
 
-        const settings = this.documentSettings.get(uri) || this.globalSettings;
-
-        await this.tryUpdateAdditionalImports();
-
-        return addImports(settings, this.additionalImports);
+        return info.getSettings();
     }
 
     /**
@@ -62,7 +99,7 @@ export class SettingsManager {
      * @param uri Document uri
      */
     removeDocumentSettings(uri: string): void {
-        this.documentSettings.delete(uri);
+        this.documents.delete(uri);
     }
 
     /**
@@ -70,38 +107,47 @@ export class SettingsManager {
      * This flag will be reset after first successful update.
      * NOTE: Imports are updated no more than once in 5 seconds.
      */
-    requestImportsUpdate() {
-        this.additionalImportsUpdateRequested = true;
+    requestImportsUpdate(uri: string) {
+        this.documents.get(uri)?.requestImportsUpdate();
     }
 
-    private async tryUpdateDocumentSettings(uri: string): Promise<void> {
-        if (this.configuration && !this.documentSettings.has(uri)) {
+    /**
+     * Update document info in cache:
+     * 1. Get settings from configuration (or default)
+     * 2. Get additional imports from CLI (if needed)
+     * @param uri document uri
+     * @returns updated document info
+     */
+    private async updateDocument(uri: string): Promise<DocumentInfo> {
+        let info = this.documents.get(uri);
+        if (!info) {
+            const settings = await this.getDocumentConfiguration(uri);
+            info = new DocumentInfo(settings);
+        }
+
+        if (info.isImportsUpdateNeeded(this.cliCallDelay)) {
+            const path = URI.parse(uri).fsPath;
+            const imports = await this.cli.imports(path);
+            info.updateImports(imports);
+        }
+
+        this.documents.set(uri, info);
+
+        return info;
+    }
+
+    private async getDocumentConfiguration(uri: string): Promise<Settings> {
+        if (this.configuration) {
             // TODO: Handle errors
             const settings = await this.configuration.getConfiguration({
                 scopeUri: uri,
                 section: 'aquaSettings',
             });
             if (settings) {
-                this.documentSettings.set(uri, settings);
+                return settings;
             }
         }
-    }
 
-    private async tryUpdateAdditionalImports(): Promise<void> {
-        const now = Date.now();
-        // Update additional imports not more often than once in 5 seconds
-        // and only if there is a request to update
-        if (now - this.additionalImportsLastUpdated < 5000 || !this.additionalImportsUpdateRequested) {
-            return;
-        }
-
-        try {
-            this.additionalImports = await this.cli.imports();
-            this.additionalImportsLastUpdated = now;
-            this.additionalImportsUpdateRequested = false;
-        } catch (e) {
-            // TODO: Handle this more gracefully
-            console.log('Failed to update additional imports', e);
-        }
+        return this.defaultSettings;
     }
 }
