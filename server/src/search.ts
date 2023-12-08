@@ -39,7 +39,7 @@ export function searchInfo(
         return tokenInfo;
     }
 
-    const link = searchDefinition(position, name, locations);
+    const tokenLink = searchDefinition(position, name, locations);
 
     if (link) {
         return tokens.find((token) => isTokenByLocation(token.location, link.definition));
