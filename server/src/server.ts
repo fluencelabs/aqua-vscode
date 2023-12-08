@@ -9,15 +9,15 @@ import {
     TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
-import { Position, TextDocument } from 'vscode-languageserver-textdocument';
-import type { DefinitionParams, HoverParams, Location } from 'vscode-languageserver';
-import type { TokenInfo, TokenLink, TokenLocation } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
-import type { Hover, MarkupContent } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import type { DefinitionParams, Hover, HoverParams, Location, MarkupContent } from 'vscode-languageserver';
 import { MarkupKind } from 'vscode-languageserver';
+import type { TokenInfo, TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 
 import { compileAqua } from './validation';
 import { FluenceCli } from './cli';
 import { Settings, SettingsManager } from './settings';
+import { searchDefinition, searchInfo } from './search';
 
 // Create a connection to the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -38,50 +38,6 @@ function createSettingsManager(cliPath?: string, defaultSettings?: Settings): Se
 
 let documentSettings = createSettingsManager();
 
-function isToken(location: TokenLocation, position: Position, name: string) {
-    return (
-        location.name == name &&
-        location.startLine <= position.line &&
-        location.startCol <= position.character &&
-        location.endLine >= position.line &&
-        location.endCol >= position.character
-    );
-}
-
-function isTokenByLocation(location: TokenLocation, locationRight: TokenLocation) {
-    return (
-        location.startLine <= locationRight.startLine &&
-        location.startCol <= locationRight.startCol &&
-        location.endLine >= locationRight.endLine &&
-        location.endCol >= locationRight.endCol
-    );
-}
-
-function searchDefinition(position: Position, name: string, locations: TokenLink[]): TokenLink | undefined {
-    return locations.find((token) => isToken(token.current, position, name));
-}
-
-function searchInfo(
-    position: Position,
-    name: string,
-    tokens: TokenInfo[],
-    locations: TokenLink[],
-): TokenInfo | undefined {
-    const tokenInfo = tokens.find((token) => isToken(token.location, position, name));
-
-    if (tokenInfo) {
-        return tokenInfo;
-    }
-
-    const link = searchDefinition(position, name, locations);
-
-    if (link) {
-        return tokens.find((token) => isTokenByLocation(token.location, link.definition));
-    } else {
-        return undefined;
-    }
-}
-
 interface PageInfo {
     links: TokenLink[];
     tokens: TokenInfo[];
@@ -91,31 +47,28 @@ interface PageInfo {
 const allPageInfo: Map<string, PageInfo> = new Map();
 
 function onHover({ textDocument, position }: HoverParams): Hover | null {
-    console.log(textDocument.uri);
-    console.log(position);
-
     const doc = documents.get(textDocument.uri);
+    const currentPage = allPageInfo.get(textDocument.uri);
 
-    if (doc) {
-        const currentPage = allPageInfo.get(textDocument.uri);
-        if (currentPage) {
-            const token = searchInfo(position, doc.uri.replace('file://', ''), currentPage.tokens, currentPage.links);
-            connection.console.log('find token: ' + JSON.stringify(token));
-            if (token) {
-                const content: MarkupContent = { kind: MarkupKind.PlainText, value: token.type };
+    if (doc == undefined || currentPage == undefined) {
+        connection.console.error(`Cannot find compilation info about page: ${textDocument.uri}`);
+        return null;
+    }
 
-                const hover: Hover = { contents: content };
+    const token = searchInfo(position, doc.uri.replace('file://', ''), currentPage.tokens, currentPage.links);
+    connection.console.info('find token: ' + JSON.stringify(token));
+    if (token) {
+        const content: MarkupContent = { kind: MarkupKind.PlainText, value: token.type };
 
-                return hover;
-            }
-        }
+        const hover: Hover = { contents: content };
+
+        return hover;
     }
 
     return null;
 }
 
 connection.onHover(onHover);
-connection.console.log('hover registered');
 
 async function onDefinition({ textDocument, position }: DefinitionParams): Promise<Location[]> {
     connection.console.log('onDefinition event');
@@ -127,7 +80,7 @@ async function onDefinition({ textDocument, position }: DefinitionParams): Promi
     }
 
     const token = searchDefinition(position, doc.uri.replace('file://', ''), currentPage.links);
-    connection.console.log('found token: ' + JSON.stringify(token));
+    connection.console.info('found token: ' + JSON.stringify(token));
 
     if (token == undefined) {
         return [];
