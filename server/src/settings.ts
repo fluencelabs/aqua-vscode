@@ -127,8 +127,13 @@ export class SettingsManager {
 
         if (info.isImportsUpdateNeeded(this.cliCallDelay)) {
             const path = URI.parse(uri).fsPath;
-            const imports = await this.cli.imports(path);
-            info.updateImports(imports);
+            try {
+                const imports = await this.cli.imports(path);
+                info.updateImports(imports);
+            } catch (e) {
+                // try-catch is needed, because server will crash if there will be no Fluence CLI installed
+                console.error('Cannot update imports: ', e);
+            }
         }
 
         this.documents.set(uri, info);
