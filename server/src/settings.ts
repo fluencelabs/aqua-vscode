@@ -1,9 +1,9 @@
 import type { Configuration } from 'vscode-languageserver/lib/common/configuration';
 import { URI } from 'vscode-uri';
 
+import type { Imports } from './imports';
+import { normalizeImports, uniteImports } from './imports';
 import type { FluenceCli } from './cli';
-
-type Imports = string[];
 
 export interface Settings {
     imports: Imports;
@@ -17,7 +17,7 @@ class DocumentInfo {
     /* Settings from configuration (or default) */
     private settings: Settings;
     /* Additional imports from CLI */
-    private imports: Imports = [];
+    private imports: Imports = {};
     private importsLastUpdated = 0;
     private importsUpdateRequested = true;
 
@@ -28,7 +28,8 @@ class DocumentInfo {
     getSettings(): Settings {
         return {
             ...this.settings,
-            imports: [...this.settings.imports, ...this.imports],
+            // Imports from settings override imports from CLI
+            imports: uniteImports(this.imports, this.settings.imports),
         };
     }
 
@@ -43,7 +44,7 @@ class DocumentInfo {
         return isUpdateReady && this.importsUpdateRequested;
     }
 
-    updateImports(imports: string[]) {
+    updateImports(imports: Imports) {
         this.imports = imports;
         this.importsLastUpdated = Date.now();
         this.importsUpdateRequested = false;
@@ -61,7 +62,7 @@ export interface SettingsManagerConfig {
  */
 export class SettingsManager {
     private readonly defaultSettings: Settings = {
-        imports: [],
+        imports: {},
         enableLegacyAutoImportSearch: false,
     };
     private documents: Map<string, DocumentInfo> = new Map();
@@ -149,6 +150,15 @@ export class SettingsManager {
                 section: 'aquaSettings',
             });
             if (settings) {
+                try {
+                    settings.imports = normalizeImports(settings.imports);
+                } catch (e) {
+                    // TODO:    Maybe show some notification to user?
+                    //          Don't know how to handle it better.
+                    console.error('Cannot normalize imports from settings: ', e);
+                    settings.imports = {};
+                }
+
                 return settings;
             }
         }

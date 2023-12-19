@@ -63,9 +63,48 @@
             "title": "Aqua",
             "properties": {
                 "aquaSettings.imports": {
+                    "definitions": {
+                        "legacyImports": {
+                            "description": "Legacy format of imports - just an array of paths",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "structuredImports": {
+                            "description": "Structured format of imports - dict of settings for path prefixes",
+                            "type": "object",
+                            "additionalProperties": {
+                                "description": "Settings for path prefix - dict of locations for import prefixes",
+                                "type": "object",
+                                "additionalProperties": {
+                                    "description": "Location for import prefix",
+                                    "type": [
+                                        "string",
+                                        "array"
+                                    ],
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "scope": "resource",
-                    "type": "array",
-                    "default": [],
+                    "type": [
+                        "object",
+                        "array"
+                    ],
+                    "if": {
+                        "type": "object"
+                    },
+                    "then": {
+                        "$ref": "#/definitions/structuredImports"
+                    },
+                    "else": {
+                        "$ref": "#/definitions/legacyImports"
+                    },
+                    "default": {},
                     "description": "Adds imports for aqua file or project"
                 },
                 "aquaSettings.enableLegacyAutoImportSearch": {
