@@ -1,6 +1,9 @@
 import { exec } from 'child_process';
 import { dirname } from 'path';
 
+import type { Imports } from './imports';
+import { normalizeImports } from './imports';
+
 export class FluenceCli {
     readonly cliPath: string;
 
@@ -16,13 +19,17 @@ export class FluenceCli {
      * Returns output of `fluence aqua imports`
      * in dir of @param filePath.
      */
-    async imports(filePath: string): Promise<string[]> {
+    async imports(filePath: string): Promise<Imports> {
         const cwd = dirname(filePath);
         const result = await this.runJson(['aqua', 'imports'], cwd);
-        if (Array.isArray(result) && result.every((i) => typeof i === 'string')) {
-            return result;
-        } else {
-            throw new Error(`Invalid result: ${JSON.stringify(result)}`);
+        try {
+            return normalizeImports(result);
+        } catch (e) {
+            if (e instanceof Error) {
+                throw new Error(`Error converting imports from fluence: ${e.message}`);
+            } else {
+                throw e;
+            }
         }
     }
 
