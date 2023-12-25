@@ -7,7 +7,6 @@ import type { FluenceCli } from './cli';
 
 export interface Settings {
     imports: Imports;
-    enableLegacyAutoImportSearch: boolean;
 }
 
 /**
@@ -63,7 +62,6 @@ export interface SettingsManagerConfig {
 export class SettingsManager {
     private readonly defaultSettings: Settings = {
         imports: {},
-        enableLegacyAutoImportSearch: false,
     };
     private documents: Map<string, DocumentInfo> = new Map();
 

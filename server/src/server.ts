@@ -184,7 +184,7 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     connection.console.log(`validateDocument ${textDocument.uri} with settings ${JSON.stringify(settings)}`);
 
-    const [diagnostics, locations, tokenInfos] = await compileAqua(settings, textDocument, folders, connection.console);
+    const [diagnostics, locations, tokenInfos] = await compileAqua(settings, textDocument);
 
     allPageInfo.set(textDocument.uri, { links: locations, tokens: tokenInfos });
 
