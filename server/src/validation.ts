@@ -48,9 +48,10 @@ export async function compileAqua(
     textDocument: TextDocument,
 ): Promise<[Diagnostic[], TokenLink[], TokenInfo[]]> {
     const uri = textDocument.uri.replace('file://', '');
+    const path = decodeURIComponent(uri);
 
     // compile aqua and get result
-    const result = await AquaLSP.compile(uri, settings.imports);
+    const result = await AquaLSP.compile(path, settings.imports);
 
     const diagnostics: Diagnostic[] = [];
     const links: TokenLink[] = [];
