@@ -1,6 +1,7 @@
 node_modules
 *.vsix
 *.tgz
+.vscode-test
 
 server/out
 client/out

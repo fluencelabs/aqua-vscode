@@ -17,6 +17,9 @@
         },
         {
             "path": "./server"
+        },
+        {
+            "path": "./test"
         }
     ],
     "extends": "@tsconfig/node16-strictest/tsconfig.json"
