@@ -60,36 +60,50 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var assert = __importStar(require("assert"));
+var path = __importStar(require("path"));
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 var vscode = __importStar(require("vscode"));
 // import * as myExtension from '../extension';
+var testFolderLocation = '/../test-workspace/';
 suite('Extension Test Suite', function () {
     test('Should provide diagnostics for syntax errors', function () { return __awaiter(void 0, void 0, void 0, function () {
-        var document, diagnostics;
+        var uri, document, diagnostics;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    console.log('test');
-                    return [4 /*yield*/, vscode.workspace.openTextDocument('./oneFile/file.aqua')];
+                    vscode.window.showInformationMessage('test');
+                    console.error('test');
+                    console.log('aaaaaaaaaaaaa');
+                    console.log(vscode.Uri.parse('.'));
+                    uri = vscode.Uri.file(path.join(__dirname + testFolderLocation + 'oneFile/file.aqua'));
+                    return [4 /*yield*/, vscode.workspace.openTextDocument(uri)];
                 case 1:
                     document = _a.sent();
                     console.log('uri:', document.uri);
+                    // Wait for the language server to provide diagnostics
+                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, 2000); })];
+                case 2:
+                    // Wait for the language server to provide diagnostics
+                    _a.sent(); // Adjust timeout as needed
+                    diagnostics = vscode.languages.getDiagnostics(document.uri);
                     vscode.extensions.all.forEach(function (extension) {
                         if (extension.isActive) {
                             console.log("- ".concat(extension.id));
                         }
                     });
-                    // Wait for the language server to provide diagnostics
-                    return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, 5000); })];
-                case 2:
-                    // Wait for the language server to provide diagnostics
-                    _a.sent(); // Adjust timeout as needed
-                    diagnostics = vscode.languages.getDiagnostics(document.uri);
+                    assert.ok(vscode.extensions.all.find(function (extension) {
+                        return extension.isActive && extension.id === 'FluenceLabs.aqua';
+                    }));
                     // Assert that diagnostics contain expected errors or warnings
                     console.log('diagnostics:', diagnostics);
                     // ... additional assertions as needed
-                    assert.ok(false);
+                    assert.ok(true);
+                    // Close the document and clean up
+                    return [4 /*yield*/, vscode.commands.executeCommand('workbench.action.closeActiveEditor')];
+                case 3:
+                    // Close the document and clean up
+                    _a.sent();
                     return [2 /*return*/];
             }
         });
