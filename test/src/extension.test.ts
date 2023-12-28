@@ -30,7 +30,8 @@ suite('Extension Test Suite', () => {
         assert.ok(
             vscode.extensions.all.find((extension) => {
                 return extension.isActive && extension.id === 'FluenceLabs.aqua';
-            }), "Aqua extension is not active"
+            }),
+            'Aqua extension is not active',
         );
 
         assert.ok(true);
