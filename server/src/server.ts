@@ -117,7 +117,7 @@ documents.onDidOpen(async (change) => {
     await validateDocument(change.document);
 });
 
-connection.onHover(({ textDocument, position }: HoverParams): Hover => {
+connection.onHover(({ textDocument, position }: HoverParams): Hover | null => {
     connection.console.log('onHover event');
 
     const info = documentInfos.infoAt(textDocument.uri, position);
