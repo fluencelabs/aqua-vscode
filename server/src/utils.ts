@@ -1,3 +1,5 @@
+import url from 'url';
+
 import type { Position } from 'vscode-languageserver-textdocument';
 import type { DocumentUri, Location } from 'vscode-languageserver';
 
@@ -41,7 +43,7 @@ export function locInLoc(lhs: TokenLocation, rhs: TokenLocation): boolean {
  * @returns file path
  */
 export function uriToPath(uri: DocumentUri) {
-    return decodeURIComponent(uri.replace('file://', ''));
+    return url.fileURLToPath(uri);
 }
 
 /**
@@ -50,10 +52,7 @@ export function uriToPath(uri: DocumentUri) {
  * @returns URI
  */
 export function pathToUri(path: string) {
-    // TODO: Think of more comprehend logic?
-    // `encodeURI` thinks that "@" are marks in URL,
-    // but in our cases they are just a part of file path
-    return 'file://' + path;
+    return url.format(url.pathToFileURL(path));
 }
 
 /**
