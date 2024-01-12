@@ -50,7 +50,10 @@ export function uriToPath(uri: DocumentUri) {
  * @returns URI
  */
 export function pathToUri(path: string) {
-    return 'file://' + encodeURIComponent(path);
+    // TODO: Think of more comprehend logic?
+    // `encodeURI` thinks that "@" are marks in URL,
+    // but in our cases they are just a part of file path
+    return 'file://' + path;
 }
 
 /**
