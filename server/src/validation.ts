@@ -4,15 +4,11 @@ import * as Path from 'path';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver/node';
 
-import {
-    AquaLSP,
-    ErrorInfo,
-    TokenInfo,
-    TokenLink,
-    WarningInfo,
-} from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
+import { AquaLSP, ErrorInfo, TokenLink, WarningInfo } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 
 import type { Settings } from './settings';
+import { DocumentInfo } from './info';
+import { uriToPath } from './utils';
 
 function infoToDiagnostic(textDocument: TextDocument, info: ErrorInfo | WarningInfo): Diagnostic {
     const severity = info.infoType === 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning;
@@ -46,9 +42,8 @@ function infoToDiagnostic(textDocument: TextDocument, info: ErrorInfo | WarningI
 export async function compileAqua(
     settings: Settings,
     textDocument: TextDocument,
-): Promise<[Diagnostic[], TokenLink[], TokenInfo[]]> {
-    const uri = textDocument.uri.replace('file://', '');
-    const path = decodeURIComponent(uri);
+): Promise<[Diagnostic[], DocumentInfo]> {
+    const path = uriToPath(textDocument.uri);
 
     // compile aqua and get result
     const result = await AquaLSP.compile(path, settings.imports);
@@ -56,9 +51,9 @@ export async function compileAqua(
     const diagnostics: Diagnostic[] = [];
     const links: TokenLink[] = [];
 
-    const docPath = Path.parse(textDocument.uri);
+    const docPath = Path.parse(path);
 
-    let linksSearch = [docPath.dir.replace('file://', '')];
+    const linksSearch = [docPath.dir];
 
     // TODO: fix import locations search
     result.importLocations.map(function (ti) {
@@ -89,6 +84,7 @@ export async function compileAqua(
     }
 
     const locations = result.locations.concat(links);
+    const info = new DocumentInfo(locations, result.tokens);
 
-    return [diagnostics, locations, result.tokens];
+    return [diagnostics, info];
 }
