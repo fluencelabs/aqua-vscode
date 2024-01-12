@@ -4,7 +4,6 @@ export type Imports = Record<string, Record<string, string[]>>;
 // Legacy format of an array of paths is converted to the new format
 // Empty imports are converted to an empty object
 export function normalizeImports(imports: unknown): Imports {
-    console.log('normalizeImports: ', imports);
     // Empty imports
     if (imports === undefined || imports === null) {
         return {};

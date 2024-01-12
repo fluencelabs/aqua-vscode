@@ -10,14 +10,14 @@ import {
 } from 'vscode-languageserver/node';
 import type { WorkspaceFolder } from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import type { DefinitionParams, Hover, HoverParams, Location, MarkupContent } from 'vscode-languageserver';
+import type { DefinitionParams, Hover, HoverParams, MarkupContent } from 'vscode-languageserver';
 import { MarkupKind } from 'vscode-languageserver';
-import type { TokenInfo, TokenLink } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 
 import { compileAqua } from './validation';
 import { FluenceCli } from './cli';
 import { Settings, SettingsManager } from './settings';
-import { searchDefinition, searchInfo } from './search';
+import { InfoManager } from './info';
+import { tokenToLocation } from './utils';
 
 // Create a connection to the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -37,72 +37,7 @@ function createSettingsManager(cliPath?: string, cliCallDelay?: number, defaultS
 }
 
 let documentSettings = createSettingsManager();
-
-interface PageInfo {
-    links: TokenLink[];
-    tokens: TokenInfo[];
-}
-
-// Cache all locations of all open documents
-const allPageInfo: Map<string, PageInfo> = new Map();
-
-function onHover({ textDocument, position }: HoverParams): Hover | null {
-    const doc = documents.get(textDocument.uri);
-    const currentPage = allPageInfo.get(textDocument.uri);
-
-    if (doc == undefined || currentPage == undefined) {
-        throw new Error(`Cannot find compilation info about page: ${textDocument.uri}`);
-    }
-
-    const token = searchInfo(position, doc.uri.replace('file://', ''), currentPage.tokens, currentPage.links);
-    if (token) {
-        const content: MarkupContent = { kind: MarkupKind.PlainText, value: token.type };
-
-        const hover: Hover = { contents: content };
-
-        return hover;
-    }
-
-    return null;
-}
-
-connection.onHover(onHover);
-
-async function onDefinition({ textDocument, position }: DefinitionParams): Promise<Location[]> {
-    connection.console.log('onDefinition event');
-    const doc = documents.get(textDocument.uri);
-    const currentPage = allPageInfo.get(textDocument.uri);
-
-    if (doc == undefined || currentPage == undefined) {
-        return [];
-    }
-
-    const tokenLink = searchDefinition(position, doc.uri.replace('file://', ''), currentPage.links);
-
-    if (tokenLink == undefined) {
-        return [];
-    }
-
-    const definition = tokenLink.definition;
-
-    return [
-        {
-            uri: 'file://' + definition.name,
-            range: {
-                start: {
-                    line: definition.startLine,
-                    character: definition.startCol,
-                },
-                end: {
-                    line: definition.endLine,
-                    character: definition.endCol,
-                },
-            },
-        },
-    ];
-}
-
-connection.onDefinition(onDefinition);
+const documentInfos = new InfoManager();
 
 connection.onDidChangeConfiguration((change) => {
     connection.console.log(`onDidChangeConfiguration event ${JSON.stringify(change)}`);
@@ -120,6 +55,7 @@ connection.onDidChangeConfiguration((change) => {
 // Only keep settings for open documents
 documents.onDidClose((e) => {
     documentSettings.removeDocumentSettings(e.document.uri);
+    documentInfos.removeDocumentInfo(e.document.uri);
 });
 
 connection.onInitialize((params: InitializeParams) => {
@@ -171,12 +107,34 @@ connection.onInitialized(async () => {
 
 documents.onDidSave(async (change) => {
     connection.console.log('onDidSave event');
+
     await validateDocument(change.document);
 });
 
 documents.onDidOpen(async (change) => {
     connection.console.log('onDidOpen event');
+
     await validateDocument(change.document);
+});
+
+connection.onHover(({ textDocument, position }: HoverParams): Hover => {
+    connection.console.log('onHover event');
+
+    const info = documentInfos.infoAt(textDocument.uri, position);
+    if (info) {
+        const content: MarkupContent = { kind: MarkupKind.PlainText, value: info.type };
+        return { contents: content };
+    }
+
+    return null;
+});
+
+connection.onDefinition(({ textDocument, position }: DefinitionParams) => {
+    connection.console.log('onDefinition event');
+
+    const def = documentInfos.defAt(textDocument.uri, position);
+
+    return def ? [tokenToLocation(def)] : [];
 });
 
 async function validateDocument(textDocument: TextDocument): Promise<void> {
@@ -184,9 +142,9 @@ async function validateDocument(textDocument: TextDocument): Promise<void> {
 
     connection.console.log(`validateDocument ${textDocument.uri} with settings ${JSON.stringify(settings)}`);
 
-    const [diagnostics, locations, tokenInfos] = await compileAqua(settings, textDocument);
+    const [diagnostics, info] = await compileAqua(settings, textDocument);
 
-    allPageInfo.set(textDocument.uri, { links: locations, tokens: tokenInfos });
+    documentInfos.updateDocumentInfo(textDocument.uri, info);
 
     // Send the computed diagnostics to VSCode.
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });

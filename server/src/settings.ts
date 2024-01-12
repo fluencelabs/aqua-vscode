@@ -12,7 +12,7 @@ export interface Settings {
 /**
  * Document info stored in `SettingsManager` cache
  */
-class DocumentInfo {
+class DocumentSettingsInfo {
     /* Settings from configuration (or default) */
     private settings: Settings;
     /* Additional imports from CLI */
@@ -63,7 +63,7 @@ export class SettingsManager {
     private readonly defaultSettings: Settings = {
         imports: {},
     };
-    private documents: Map<string, DocumentInfo> = new Map();
+    private documents: Map<string, DocumentSettingsInfo> = new Map();
 
     private readonly cli: FluenceCli;
     private readonly cliCallDelay: number | undefined;
@@ -117,11 +117,11 @@ export class SettingsManager {
      * @param uri document uri
      * @returns updated document info
      */
-    private async updateDocument(uri: string): Promise<DocumentInfo> {
+    private async updateDocument(uri: string): Promise<DocumentSettingsInfo> {
         let info = this.documents.get(uri);
         if (!info) {
             const settings = await this.getDocumentConfiguration(uri);
-            info = new DocumentInfo(settings);
+            info = new DocumentSettingsInfo(settings);
         }
 
         if (info.isImportsUpdateNeeded(this.cliCallDelay)) {
