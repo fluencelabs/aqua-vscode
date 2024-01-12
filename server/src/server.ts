@@ -117,15 +117,13 @@ documents.onDidOpen(async (change) => {
     await validateDocument(change.document);
 });
 
-connection.onHover(({ textDocument, position }: HoverParams) => {
+connection.onHover(({ textDocument, position }: HoverParams): Hover => {
     connection.console.log('onHover event');
 
     const info = documentInfos.infoAt(textDocument.uri, position);
     if (info) {
         const content: MarkupContent = { kind: MarkupKind.PlainText, value: info.type };
-        const hover: Hover = { contents: content };
-
-        return hover;
+        return { contents: content };
     }
 
     return null;
