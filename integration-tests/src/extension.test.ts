@@ -6,6 +6,9 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 // import * as myExtension from '../extension';
 
+// Time to wait for the extension to provide diagnostics
+const DIAGNOSTICS_DELAY = 4000;
+
 function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -37,7 +40,7 @@ suite('Extension Test Suite', () => {
         const document = await openDocument('singleFile/file.aqua');
 
         // Wait for the extension to provide diagnostics
-        await delay(2000);
+        await delay(DIAGNOSTICS_DELAY);
 
         // Retrieve diagnostics
         const diagnostics = vscode.languages.getDiagnostics(document.uri);
@@ -58,7 +61,7 @@ suite('Extension Test Suite', () => {
         const document = await openDocument('npmPackage/main.aqua');
 
         // Wait for the extension to provide diagnostics
-        await delay(2000);
+        await delay(DIAGNOSTICS_DELAY);
 
         // Retrieve diagnostics
         const diagnostics = vscode.languages.getDiagnostics(document.uri);
@@ -79,7 +82,7 @@ suite('Extension Test Suite', () => {
         const document = await openDocument('fluenceProject/src/aqua/test.aqua');
 
         // Wait for the extension to provide diagnostics
-        await delay(2000);
+        await delay(DIAGNOSTICS_DELAY);
 
         // Retrieve diagnostics
         const diagnostics = vscode.languages.getDiagnostics(document.uri);
