@@ -6,26 +6,22 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 // import * as myExtension from '../extension';
 
-const testFolderLocation = '/../test-workspace/';
+function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 suite('Extension Test Suite', () => {
     test('Should provide diagnostics for syntax errors', async () => {
-        vscode.window.showInformationMessage('test');
+        assert.ok(vscode.workspace.workspaceFolders?.length === 1, 'Test workspace should contain one folder');
 
-        const uri = vscode.Uri.file(path.join(__dirname + testFolderLocation + 'oneFile/file.aqua'));
+        const rootPath = vscode.workspace.workspaceFolders[0]!.uri.fsPath;
+        const filePath = path.join(rootPath, 'oneFile/file.aqua');
+        const fileUri = vscode.Uri.file(filePath);
 
-        const document = await vscode.workspace.openTextDocument(uri);
+        const document = await vscode.workspace.openTextDocument(fileUri);
 
-        console.log('uri:', document.uri);
-
-        // Wait for the language server to provide diagnostics
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // Adjust timeout as needed
-
-        // Retrieve diagnostics
-        const diagnostics = vscode.languages.getDiagnostics(document.uri);
-
-        // Assert that diagnostics contain expected errors or warnings
-        console.log('diagnostics:', diagnostics);
+        // Wait for VSCode to enable the extension
+        await delay(1000);
 
         assert.ok(
             vscode.extensions.all.find((extension) => {
@@ -34,9 +30,18 @@ suite('Extension Test Suite', () => {
             'Aqua extension is not active',
         );
 
-        assert.ok(true);
+        // Wait for the extension to provide diagnostics
+        await delay(2000);
 
-        // Close the document and clean up
-        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+        // Retrieve diagnostics
+        const diagnostics = vscode.languages.getDiagnostics(document.uri);
+
+        assert.ok(diagnostics.length > 0, 'No diagnostics provided');
+        assert.ok(
+            diagnostics.find((diagnostic) => {
+                return diagnostic.severity === vscode.DiagnosticSeverity.Error;
+            }),
+            'No error diagnostics provided',
+        );
     }).timeout(10000);
 });

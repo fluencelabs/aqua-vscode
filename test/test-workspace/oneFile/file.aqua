@@ -1,4 +1,4 @@
 aqua Test
 
 func test() -> string:
-    <- "str"
+    <- 42
