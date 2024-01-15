@@ -6,3 +6,5 @@ node_modules
 server/out
 client/out
 integration-tests/out
+integration-tests/test-workspace/fluenceProject
+!integration-tests/test-workspace/fluenceProject/src/aqua/test.aqua

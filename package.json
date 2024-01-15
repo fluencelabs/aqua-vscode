@@ -126,6 +126,7 @@
         }
     },
     "scripts": {
+        "before-tests": "bash integration-tests/before-tests.sh",
         "test": "npm run compile && vscode-test",
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -b",
