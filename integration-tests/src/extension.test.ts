@@ -1,19 +1,39 @@
 import * as assert from 'assert';
 import * as path from 'path';
 
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
 import * as vscode from 'vscode';
-// import * as myExtension from '../extension';
-
-// Time to wait for the extension to provide diagnostics
-const DIAGNOSTICS_DELAY = 4000;
 
 function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function waitFor(cond: () => boolean, timeout: number): Promise<boolean> {
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < timeout) {
+        if (cond()) {
+            return true;
+        }
+
+        await delay(100);
+    }
+
+    return false;
+}
+
 suite('Extension Test Suite', () => {
+    async function waitForExtensionActivation(timeout: number): Promise<void> {
+        const activated = waitFor(() => {
+            return (
+                vscode.extensions.all.find((extension) => {
+                    return extension.isActive && extension.id === 'FluenceLabs.aqua';
+                }) !== undefined
+            );
+        }, timeout);
+
+        assert.ok(activated, `Aqua extension was not activated after ${timeout}ms`);
+    }
+
     async function openDocument(relPath: string): Promise<vscode.TextDocument> {
         assert.ok(vscode.workspace.workspaceFolders?.length === 1, 'Test workspace should contain one folder');
 
@@ -23,39 +43,26 @@ suite('Extension Test Suite', () => {
 
         const document = await vscode.workspace.openTextDocument(fileUri);
 
-        // Wait for VSCode to enable the extension
-        await delay(1000);
-
-        assert.ok(
-            vscode.extensions.all.find((extension) => {
-                return extension.isActive && extension.id === 'FluenceLabs.aqua';
-            }),
-            'Aqua extension is not active',
-        );
+        await waitForExtensionActivation(10000);
 
         return document;
     }
 
     async function getDiagnostics(uri: vscode.Uri, timeout: number): Promise<vscode.Diagnostic[]> {
-        const startTime = Date.now();
+        let diagnostics: vscode.Diagnostic[] = [];
 
-        while (Date.now() - startTime < timeout) {
-            const diagnostics = vscode.languages.getDiagnostics(uri);
+        const got = await waitFor(() => {
+            diagnostics = vscode.languages.getDiagnostics(uri);
+            return diagnostics.length > 0;
+        }, timeout);
 
-            if (diagnostics.length > 0) {
-                return diagnostics;
-            }
+        assert.ok(got, `No diagnostics provided for ${uri.toString()} in ${timeout}ms`);
 
-            await delay(100);
-        }
-
-        throw new Error(`No diagnostics provided for ${uri} in ${timeout}ms`);
+        return diagnostics;
     }
 
     test('Semantic errors in single file', async () => {
         const document = await openDocument('singleFile/file.aqua');
-
-        // Retrieve diagnostics
         const diagnostics = await getDiagnostics(document.uri, 10000);
 
         assert.ok(
@@ -71,8 +78,6 @@ suite('Extension Test Suite', () => {
 
     test('Semantic errors in npm package', async () => {
         const document = await openDocument('npmPackage/main.aqua');
-
-        // Retrieve diagnostics
         const diagnostics = await getDiagnostics(document.uri, 10000);
 
         assert.ok(
@@ -88,8 +93,6 @@ suite('Extension Test Suite', () => {
 
     test('Semantic errors in fluence project', async () => {
         const document = await openDocument('fluenceProject/src/aqua/test.aqua');
-
-        // Retrieve diagnostics
         const diagnostics = await getDiagnostics(document.uri, 10000);
 
         assert.ok(
