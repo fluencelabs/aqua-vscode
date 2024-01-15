@@ -36,16 +36,28 @@ suite('Extension Test Suite', () => {
         return document;
     }
 
+    async function getDiagnostics(uri: vscode.Uri, timeout: number): Promise<vscode.Diagnostic[]> {
+        const startTime = Date.now();
+
+        while (Date.now() - startTime < timeout) {
+            const diagnostics = vscode.languages.getDiagnostics(uri);
+
+            if (diagnostics.length > 0) {
+                return diagnostics;
+            }
+
+            await delay(100);
+        }
+
+        throw new Error(`No diagnostics provided for ${uri} in ${timeout}ms`);
+    }
+
     test('Semantic errors in single file', async () => {
         const document = await openDocument('singleFile/file.aqua');
 
-        // Wait for the extension to provide diagnostics
-        await delay(DIAGNOSTICS_DELAY);
-
         // Retrieve diagnostics
-        const diagnostics = vscode.languages.getDiagnostics(document.uri);
+        const diagnostics = await getDiagnostics(document.uri, 10000);
 
-        assert.ok(diagnostics.length > 0, 'No diagnostics provided');
         assert.ok(
             diagnostics.find((diagnostic) => {
                 return (
@@ -60,13 +72,9 @@ suite('Extension Test Suite', () => {
     test('Semantic errors in npm package', async () => {
         const document = await openDocument('npmPackage/main.aqua');
 
-        // Wait for the extension to provide diagnostics
-        await delay(DIAGNOSTICS_DELAY);
-
         // Retrieve diagnostics
-        const diagnostics = vscode.languages.getDiagnostics(document.uri);
+        const diagnostics = await getDiagnostics(document.uri, 10000);
 
-        assert.ok(diagnostics.length > 0, 'No diagnostics provided');
         assert.ok(
             diagnostics.find((diagnostic) => {
                 return (
@@ -81,13 +89,9 @@ suite('Extension Test Suite', () => {
     test('Semantic errors in fluence project', async () => {
         const document = await openDocument('fluenceProject/src/aqua/test.aqua');
 
-        // Wait for the extension to provide diagnostics
-        await delay(DIAGNOSTICS_DELAY);
-
         // Retrieve diagnostics
-        const diagnostics = vscode.languages.getDiagnostics(document.uri);
+        const diagnostics = await getDiagnostics(document.uri, 10000);
 
-        assert.ok(diagnostics.length > 0, 'No diagnostics provided');
         assert.ok(
             diagnostics.find((diagnostic) => {
                 return (
