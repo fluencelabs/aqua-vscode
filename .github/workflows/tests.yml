@@ -7,6 +7,10 @@ on:
                 description: 'git ref to checkout to'
                 type: string
                 default: 'main'
+            fcli-version:
+                description: 'fcli version to use'
+                type: string
+                default: 'main'
 
 env:
     FORCE_COLOR: true
@@ -29,6 +33,12 @@ jobs:
               with:
                   node-version: 18
                   cache: 'npm'
+
+            - name: Setup fcli
+              uses: fluencelabs/setup-fluence@v1
+              with:
+                  artifact: fcli
+                  version: ${{ inputs.fcli-version }}
 
             - name: Install dependencies
               run: npm ci
