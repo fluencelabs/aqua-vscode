@@ -19,7 +19,7 @@
             "path": "./server"
         },
         {
-            "path": "./test"
+            "path": "./integration-tests"
         }
     ],
     "extends": "@tsconfig/node16-strictest/tsconfig.json"
