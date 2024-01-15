@@ -74,4 +74,25 @@ suite('Extension Test Suite', () => {
             'No error diagnostics provided',
         );
     }).timeout(10000);
+
+    test('Semantic errors in fluence project', async () => {
+        const document = await openDocument('fluenceProject/src/aqua/test.aqua');
+
+        // Wait for the extension to provide diagnostics
+        await delay(2000);
+
+        // Retrieve diagnostics
+        const diagnostics = vscode.languages.getDiagnostics(document.uri);
+
+        assert.ok(diagnostics.length > 0, 'No diagnostics provided');
+        assert.ok(
+            diagnostics.find((diagnostic) => {
+                return (
+                    diagnostic.severity === vscode.DiagnosticSeverity.Error &&
+                    diagnostic.message.includes('Wrong value type')
+                );
+            }),
+            'No error diagnostics provided',
+        );
+    }).timeout(10000);
 });
