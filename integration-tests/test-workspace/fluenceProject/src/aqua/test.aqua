@@ -1,0 +1,7 @@
+aqua Test declares *
+
+use "@fluencelabs/aqua-lib/builtin.aqua" as Builtin
+
+func test() -> i64:
+    res <- Builtin.Op.concat_strings("a", "b")
+    <- res

@@ -1,0 +1,52 @@
+name: Run tests with workflow_call
+
+on:
+    workflow_call:
+        inputs:
+            ref:
+                description: 'git ref to checkout to'
+                type: string
+                default: 'main'
+            fcli-version:
+                description: 'fcli version to use'
+                type: string
+                default: 'main'
+
+env:
+    FORCE_COLOR: true
+
+jobs:
+    aqua-vscode:
+        name: 'Run tests'
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  repository: fluencelabs/aqua-vscode
+                  ref: ${{ inputs.ref }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 18
+                  cache: 'npm'
+
+            - name: Setup fcli
+              uses: fluencelabs/setup-fluence@v1
+              with:
+                  artifact: fcli
+                  version: ${{ inputs.fcli-version }}
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run before-tests
+              run: npm run before-tests
+
+            - name: Run tests
+              uses: coactions/setup-xvfb@v1
+              with:
+                  run: npm run test

@@ -1,0 +1,4 @@
+aqua Test
+
+func test() -> string:
+    <- 42
