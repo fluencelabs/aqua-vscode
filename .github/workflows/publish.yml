@@ -55,7 +55,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   tag_name: ${{ env.FINAL_VERSION }}
-                  name: Visual Studio Code syntax highlight ${{ env.FINAL_VERSION }}
+                  name: Aqua VSCE ${{ env.FINAL_VERSION }}
                   body: |
                       Version: ${{ env.FINAL_VERSION }}
                   files: |
