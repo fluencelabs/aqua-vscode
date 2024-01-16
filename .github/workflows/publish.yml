@@ -1,17 +1,14 @@
-name: 'build and release vscode syntax highlight'
+name: 'Build and release Aqua VSCE'
 
 on:
     push:
-        # uncomment to release only on tags starting with 'v'
-        # tags:
-        #   - "v*"
         branches:
             - 'main'
 
     workflow_dispatch:
 
 jobs:
-    npm-publish:
+    publish:
         name: 'Publish'
         runs-on: ubuntu-latest
         defaults:
@@ -19,12 +16,6 @@ jobs:
                 shell: bash
 
         steps:
-            ### Extract branch name
-            - name: Extract branch name
-              if: github.event_name != 'pull_request'
-              run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
-              id: extract_branch
-
             - name: Extract branch name
               if: github.event_name == 'pull_request'
               run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
@@ -32,7 +23,6 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v2
 
-            ### Calculate FINAL_VERSION
             - name: Install jq
               run: sudo apt-get update && sudo apt-get --yes --force-yes install jq
 
@@ -46,25 +36,25 @@ jobs:
                   echo "PKG_NAME=$PKG_NAME" | tee -a $GITHUB_ENV
                   echo "PKG_FILE=${PKG_NAME}-${VERSION}.vsix" | tee -a $GITHUB_ENV
 
-            ### Set version
             - name: Set version to ${{ env.FINAL_VERSION }}
               run: |
                   yarn version --new-version ${{ env.FINAL_VERSION }} --no-git-tag-version
 
-            ### Pack vsix package
-            - uses: actions/setup-node@v1
+            - name: Setup Node.js
+              uses: actions/setup-node@v1
               with:
-                  node-version: '15'
+                  node-version: '18'
                   registry-url: 'https://registry.npmjs.org'
-            - name: build package
+
+            - name: Package and publish
               run: |
                   npm i
                   npm i -g vsce
                   vsce package
                   vsce publish -p ${{ secrets.VSCE_PAT }}
 
-            ### create release
-            - uses: softprops/action-gh-release@v1
+            - name: Create release
+              uses: softprops/action-gh-release@v1
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
