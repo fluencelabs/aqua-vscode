@@ -34,23 +34,15 @@ async function openDocument(relPath: string): Promise<[TextDocument, DocumentInf
  * @returns locations of variable in document
  */
 function locationsOf(name: string, doc: TextDocument): Location[] {
-    const re = new RegExp(`(?<=\\b)${name}(?=\\b)`, 'g');
-    const text = doc.getText();
-
-    const locations: Location[] = [];
-    for (let match = re.exec(text); match !== null; match = re.exec(text)) {
-        const start = doc.positionAt(match.index);
-        const end = doc.positionAt(match.index + match[0].length);
-        locations.push({
+    return [...doc.getText().matchAll(new RegExp(`(?<=\\b)${name}(?=\\b)`, 'g')].map((match) => {
+        return {
             uri: doc.uri,
             range: {
-                start,
-                end,
+                start: doc.positionAt(match.index),
+                end: doc.positionAt(match.index + match[0].length),
             },
-        });
-    }
-
-    return locations;
+        }
+    })
 }
 
 /**
