@@ -1,0 +1,30 @@
+aqua Simple
+
+export main
+
+func getStr() -> string:
+    <- "test string"
+
+func consumeStr(str: string) -> string:
+    <- str
+
+service Srv("test-srv"):
+    consumeStr(str: string) -> string
+
+ability Ab:
+    field: string
+    arrow(s: string) -> string
+
+func main() -> string:
+    -- Definition
+    testVar <- getStr()
+    -- Use as argument to function
+    newVar1 <- consumeStr(testVar)
+    -- Use as argument to service
+    newVar2 <- Srv.consumeStr(testVar)
+    -- Use as argument to ability creation
+    ab = Ab(field = testVar, arrow = consumeStr)
+    -- Use as argument to ability call
+    newVar3 <- ab.arrow(testVar)
+    -- Use in return statement
+    <- testVar

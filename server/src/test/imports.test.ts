@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { normalizeImports, uniteImports } from '../imports.js';
+import { normalizeImports, uniteImports } from '../imports';
 
 describe('Imports Test Suite', () => {
     describe('normalizeImports', () => {

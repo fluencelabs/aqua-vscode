@@ -1,3 +1,3 @@
 module.exports = {
-    spec: 'out/test/**/*.test.js',
+    spec: 'src/test/**/*.test.ts',
 };

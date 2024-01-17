@@ -10,6 +10,6 @@
         "rootDir": "src"
     },
     "include": ["src"],
-    "exclude": ["node_modules"],
+    "exclude": ["node_modules", "src/test"],
     "extends": "@tsconfig/node16-strictest/tsconfig.json"
 }
