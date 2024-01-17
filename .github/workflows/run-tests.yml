@@ -22,7 +22,13 @@ concurrency:
 
 jobs:
     tests:
-        name: 'aqua-vscode'
+        name: 'Integration tests'
         uses: ./.github/workflows/tests.yml
+        with:
+            ref: ${{ github.ref }}
+    
+    unit-tests:
+        name: 'Unit tests'
+        uses: ./.github/workflows/unit-tests.yml
         with:
             ref: ${{ github.ref }}
