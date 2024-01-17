@@ -8,8 +8,8 @@
         "rootDir": "src",
         "sourceMap": true
     },
-    "include": ["src"],
     "types": ["node"],
+    "include": [],
     "exclude": ["node_modules", ".vscode-test"],
     "references": [
         {

@@ -48,11 +48,19 @@ export function normalizeImports(imports: unknown): Imports {
 // Deep merge two import settings, overriding the first with the second
 export function uniteImports(pre: Imports, post: Imports): Imports {
     const result: Imports = { ...pre };
-    for (const [importPrefix, locations] of Object.entries(post)) {
-        if (importPrefix in result) {
-            result[importPrefix] = { ...result[importPrefix], ...locations };
+    for (const [pathPrefix, info] of Object.entries(post)) {
+        const resultInfo = result[pathPrefix];
+        if (resultInfo) {
+            for (const [importPrefix, paths] of Object.entries(info)) {
+                const importInfo = resultInfo[importPrefix];
+                if (importInfo) {
+                    resultInfo[importPrefix] = [...importInfo, ...paths];
+                } else {
+                    resultInfo[importPrefix] = paths;
+                }
+            }
         } else {
-            result[importPrefix] = locations;
+            result[pathPrefix] = info;
         }
     }
 
