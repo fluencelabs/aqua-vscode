@@ -15,13 +15,12 @@ import { pathToUri, tokenToLocation } from '../utils';
  */
 async function openDocument(relPath: string): Promise<[TextDocument, DocumentInfo]> {
     const absPath = path.join(__dirname, relPath);
-    const uri = pathToUri(absPath);
 
     const file = await fs.open(absPath);
-    const content = await file.readFile();
+    const content = await file.readFile('utf-8');
     await file.close();
 
-    const document = TextDocument.create(uri, 'aqua', 0, content.toString());
+    const document = TextDocument.create(pathToUri(absPath), 'aqua', 0, content);
     // Compile without imports
     const [_, info] = await compileAqua({ imports: {} }, document);
 
