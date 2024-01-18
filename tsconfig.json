@@ -3,7 +3,7 @@
     "declaration": true,
     "compilerOptions": {
         "module": "commonjs",
-        "target": "ES5",
+        "target": "es2020",
         "outDir": "out",
         "rootDir": "src",
         "sourceMap": true

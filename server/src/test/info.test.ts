@@ -31,15 +31,19 @@ async function openDocument(relPath: string): Promise<[TextDocument, DocumentInf
  * @returns locations of variable in document
  */
 function locationsOf(name: string, doc: TextDocument): Location[] {
-    return [...doc.getText().matchAll(new RegExp(`(?<=\\b)${name}(?=\\b)`, 'g')].map((match) => {
+    const regex = new RegExp(`(?<=\\b)${name}(?=\\b)`, 'g');
+    return [...doc.getText().matchAll(regex)].map((match) => {
+        // `index` will always be presented, see
+        //  https://github.com/microsoft/TypeScript/issues/36788
+        const index = match.index as number;
         return {
             uri: doc.uri,
             range: {
-                start: doc.positionAt(match.index),
-                end: doc.positionAt(match.index + match[0].length),
+                start: doc.positionAt(index),
+                end: doc.positionAt(index + match[0].length),
             },
-        }
-    })
+        };
+    });
 }
 
 /**
