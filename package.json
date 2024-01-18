@@ -128,6 +128,7 @@
     "scripts": {
         "before-tests": "bash integration-tests/before-tests.sh",
         "test": "npm run compile && vscode-test",
+        "test:unit": "npm run test -C server",
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -b",
         "watch": "tsc -b -w",

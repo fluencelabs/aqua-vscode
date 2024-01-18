@@ -60,8 +60,8 @@ documents.onDidClose((e) => {
 
 connection.onInitialize((params: InitializeParams) => {
     connection.console.log('onInitialize event');
-    const capabilities = params.capabilities;
 
+    const capabilities = params.capabilities;
     hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration);
     hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
 

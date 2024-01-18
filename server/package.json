@@ -17,7 +17,12 @@
         "vscode-languageserver-textdocument": "^1.0.4",
         "vscode-uri": "3.0.8"
     },
+    "devDependencies": {
+        "@types/mocha": "^10.0.0",
+        "ts-mocha": "^10.0.0"
+    },
     "scripts": {
+        "test": "ts-mocha",
         "get-root": "npm root --global"
     }
 }
