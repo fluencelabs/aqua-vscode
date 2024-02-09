@@ -7,14 +7,16 @@ import type { TokenLocation } from '@fluencelabs/aqua-language-server-api/aqua-l
 
 /**
  * Check if position is inside token
+ * @param path path to file with token
  * @param position position to check
  * @param token token to check
  * @returns true if position is inside token
  * @note this ignores token's file name
  *       as position does not contain such info
  */
-export function posInToken(position: Position, token: TokenLocation): boolean {
+export function posInToken(path: string, position: Position, token: TokenLocation): boolean {
     return (
+        token.name == path &&
         token.startLine <= position.line &&
         token.startCol <= position.character &&
         token.endLine >= position.line &&
@@ -30,6 +32,7 @@ export function posInToken(position: Position, token: TokenLocation): boolean {
  */
 export function locInLoc(lhs: TokenLocation, rhs: TokenLocation): boolean {
     return (
+        lhs.name == rhs.name &&
         rhs.startLine <= lhs.startLine &&
         rhs.startCol <= lhs.startCol &&
         rhs.endLine >= lhs.endLine &&
