@@ -11,8 +11,10 @@ import { locInLoc, posInToken } from './utils';
 export class DocumentInfo {
     private links: TokenLink[];
     private tokens: TokenInfo[];
+    private path: string;
 
-    constructor(links: TokenLink[], tokens: TokenInfo[]) {
+    constructor(path: string, links: TokenLink[], tokens: TokenInfo[]) {
+        this.path = path;
         this.links = links;
         this.tokens = tokens;
     }
@@ -23,7 +25,7 @@ export class DocumentInfo {
      * @returns token info if found
      */
     infoAt(pos: Position): TokenInfo | undefined {
-        const info = this.tokens.find((token) => posInToken(pos, token.location));
+        const info = this.tokens.find((token) => posInToken(this.path, pos, token.location));
         if (info) {
             return info;
         }
@@ -44,7 +46,7 @@ export class DocumentInfo {
      * @returns Definition location if found
      */
     defAt(pos: Position): TokenLocation | undefined {
-        return this.links.find((link) => posInToken(pos, link.current))?.definition;
+        return this.links.find((link) => posInToken(this.path, pos, link.current))?.definition;
     }
 }
 

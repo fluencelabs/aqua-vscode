@@ -84,7 +84,7 @@ export async function compileAqua(
     }
 
     const locations = result.locations.concat(links);
-    const info = new DocumentInfo(locations, result.tokens);
+    const info = new DocumentInfo(path, locations, result.tokens);
 
     return [diagnostics, info];
 }
