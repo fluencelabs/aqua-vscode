@@ -75,7 +75,7 @@ function typeToStringInner(type: Type, depth: number): string {
         case 'arrow':
             const domainStr = typeToStringInner(type.domain, depth + 1);
             const codomainStr = typeToStringInner(type.codomain, depth + 1);
-            return `fn (${domainStr}) -> ${codomainStr}`;
+            return `func (${domainStr}) -> ${codomainStr}`;
         case 'top':
             return 'top';
         case 'bottom':
