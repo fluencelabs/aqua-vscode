@@ -18,6 +18,7 @@ import { FluenceCli } from './cli';
 import { Settings, SettingsManager } from './settings';
 import { InfoManager } from './info';
 import { tokenToLocation } from './utils';
+import { typeToString } from './types';
 
 // Create a connection to the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -122,7 +123,8 @@ connection.onHover(({ textDocument, position }: HoverParams): Hover | null => {
 
     const info = documentInfos.infoAt(textDocument.uri, position);
     if (info) {
-        const content: MarkupContent = { kind: MarkupKind.PlainText, value: info.type };
+        const typeStr = typeToString(info.type);
+        const content: MarkupContent = { kind: MarkupKind.PlainText, value: typeStr };
         return { contents: content };
     }
 

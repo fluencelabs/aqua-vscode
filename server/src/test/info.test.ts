@@ -7,6 +7,7 @@ import { Location, Position, Range } from 'vscode-languageserver';
 import { compileAqua } from '../validation';
 import { DocumentInfo } from '../info';
 import { pathToUri, tokenToLocation } from '../utils';
+import { ScalarType } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 
 /**
  * Load document from file, compile it and return info
@@ -77,7 +78,10 @@ describe('DocumentInfo Test Suite', () => {
                     const info = docInfo.infoAt(pos);
 
                     assert.ok(info, 'Info not found');
-                    assert.strictEqual(info.type, 'string', 'Wrong type info');
+
+                    const type = info.type as ScalarType;
+                    assert.strictEqual(type.tag, 'scalar', 'Wrong type tag');
+                    assert.strictEqual(type.name, 'string', 'Wrong type');
                 }
             }
         });
