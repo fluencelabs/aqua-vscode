@@ -10,32 +10,20 @@ import type {
     Type,
 } from '@fluencelabs/aqua-language-server-api/aqua-lsp-api';
 
+const collectionPrefix = {
+    array: '[]',
+    stream: '*',
+    canon: '#',
+    streammap: '%',
+    option: '?',
+};
+
 function collectionToString(
     type: ArrayType | StreamType | CanonStreamType | StreamMapType | OptionType,
     depth: number,
 ) {
     const elementType = typeToStringInner(type.element, depth);
-    let prefix: string;
-    switch (type.tag) {
-        case 'array':
-            prefix = '[]';
-            break;
-        case 'stream':
-            prefix = '*';
-            break;
-        case 'canon':
-            prefix = '#';
-            break;
-        case 'streammap':
-            prefix = '%';
-            break;
-        case 'option':
-            prefix = '?';
-            break;
-        default:
-            const _exhaustiveCheck: never = type;
-            return _exhaustiveCheck;
-    }
+    const prefix = collectionPrefix[type.tag];
     return prefix + elementType;
 }
 
