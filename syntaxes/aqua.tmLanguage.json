@@ -16,6 +16,9 @@
         },
         {
             "include": "#semantics"
+        },
+        {
+            "include": "#todo-keyword"
         }
     ],
     "repository": {
@@ -97,7 +100,13 @@
         "comments": {
             "name": "comment.line.aqua",
             "begin": "--",
-            "end": "$"
+            "end": "$",
+            "patterns": [{ "include": "#todo-keyword" }]
+        },
+        "todo-keyword": {
+            "begin": "TODO:",
+            "end": "$",
+            "name": "keyword.todo"
         },
         "semantics": {
             "patterns": [
