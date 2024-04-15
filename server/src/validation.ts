@@ -74,13 +74,19 @@ export async function compileAqua(
     });
 
     if (result.warnings) {
-        // Add all warnings to Diagnostic
-        diagnostics.push(...result.warnings.map((w) => infoToDiagnostic(textDocument, w)));
+        // Add all warnings related to the file to Diagnostic
+        const warnings = result.warnings
+            .filter((w) => w.location == null || w.location === path)
+            .map((w) => infoToDiagnostic(textDocument, w));
+        diagnostics.push(...warnings);
     }
 
     if (result.errors) {
-        // Add all errors to Diagnostic
-        diagnostics.push(...result.errors.map((e) => infoToDiagnostic(textDocument, e)));
+        // Add all errors related to the file to Diagnostic
+        const errors = result.errors
+            .filter((e) => e.location == null || e.location === path)
+            .map((e) => infoToDiagnostic(textDocument, e));
+        diagnostics.push(...errors);
     }
 
     const locations = result.locations.concat(links);
