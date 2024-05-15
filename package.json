@@ -144,7 +144,7 @@
         "@vscode/test-cli": "^0.0.4",
         "@vscode/test-electron": "^2.3.8",
         "@types/vscode": "^1.63.0",
-        "eslint": "^8.15.0",
+        "eslint": "^9.0.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-config-standard": "^17.0.0",
         "eslint-plugin-import": "^2.26.0",
