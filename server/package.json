@@ -12,7 +12,7 @@
     },
     "dependencies": {
         "@fluencelabs/aqua-language-server-api": "0.14.7",
-        "global-dirs": "^3.0.0",
+        "global-dirs": "^4.0.0",
         "vscode-languageserver": "^9.0.0",
         "vscode-languageserver-textdocument": "^1.0.4",
         "vscode-uri": "3.0.8"
