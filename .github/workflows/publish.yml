@@ -17,7 +17,7 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
 
             - name: Install jq
               run: sudo apt-get update && sudo apt-get --yes --force-yes install jq
@@ -37,7 +37,7 @@ jobs:
                   yarn version --new-version ${{ env.FINAL_VERSION }} --no-git-tag-version
 
             - name: Setup Node.js
-              uses: actions/setup-node@v1
+              uses: actions/setup-node@v4
               with:
                   node-version: '18'
                   registry-url: 'https://registry.npmjs.org'
@@ -50,7 +50,7 @@ jobs:
                   vsce publish -p ${{ secrets.VSCE_PAT }}
 
             - name: Create release
-              uses: softprops/action-gh-release@v1
+              uses: softprops/action-gh-release@v2
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
