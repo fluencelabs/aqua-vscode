@@ -53,12 +53,21 @@ export async function compileAqua(
 
     const docPath = Path.parse(path);
 
-    const linksSearch = [docPath.dir];
+    // empty string for already resolved paths in 'importLocations'
+    const linksSearch = ['', docPath.dir];
 
-    // TODO: fix import locations search
     result.importLocations.map(function (ti) {
-        const path = linksSearch.map((i) => Path.join(i, ti.path)).find(fs.existsSync);
+        // add extension for imports without extension
+        let importPath: string;
+        if (ti.path.endsWith('.aqua')) {
+            importPath = ti.path;
+        } else {
+            importPath = ti.path + '.aqua';
+        }
 
+        const path = linksSearch.map((i) => Path.join(i, importPath)).find(fs.existsSync);
+        
+        
         if (path) {
             links.push({
                 current: ti.current,
@@ -70,6 +79,8 @@ export async function compileAqua(
                     endCol: 0,
                 },
             });
+        } else {
+            console.log(`Cannot find path for '${ti}'`)
         }
     });
 
