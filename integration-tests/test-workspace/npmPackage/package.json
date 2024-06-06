@@ -7,6 +7,6 @@
     "author": "Fluence Labs",
     "license": "Apache-2.0",
     "dependencies": {
-        "@fluencelabs/aqua-lib": "^0.10.1"
+        "@fluencelabs/aqua-lib": "0.10.2"
     }
 }
