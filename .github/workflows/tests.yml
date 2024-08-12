@@ -40,6 +40,10 @@ jobs:
                   artifact: fcli
                   version: ${{ inputs.fcli-version }}
 
+            - name: Setup upterm session
+              uses: lhotari/action-upterm@v1
+              if: failure()
+
             - name: Install dependencies
               run: npm ci
 
