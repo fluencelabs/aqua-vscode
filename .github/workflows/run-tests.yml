@@ -26,7 +26,7 @@ jobs:
         uses: ./.github/workflows/tests.yml
         with:
             ref: ${{ github.ref }}
-    
+
     unit-tests:
         name: 'Unit tests'
         uses: ./.github/workflows/unit-tests.yml

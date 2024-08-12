@@ -39,6 +39,7 @@ jobs:
               with:
                   artifact: fcli
                   version: ${{ inputs.fcli-version }}
+              continue-on-error: true
 
             - name: Install dependencies
               run: npm ci
