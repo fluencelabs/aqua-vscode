@@ -142,7 +142,7 @@
         "@typescript-eslint/eslint-plugin": "7.9.0",
         "@typescript-eslint/parser": "7.9.0",
         "@vscode/test-cli": "0.0.9",
-        "@vscode/test-electron": "2.3.10",
+        "@vscode/test-electron": "2.4.1",
         "@types/vscode": "1.89.0",
         "eslint": "8.57.0",
         "eslint-config-airbnb-base": "15.0.0",
