@@ -9,7 +9,7 @@
         "url": "https://github.com/fluencelabs/aqua"
     },
     "engines": {
-        "vscode": "1.92.1"
+        "vscode": "1.92.2"
     },
     "dependencies": {
         "vscode-languageclient": "9.0.1"
