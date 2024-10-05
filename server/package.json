@@ -4,7 +4,7 @@
     "version": "0.0.1",
     "author": "Fluence Labs",
     "engines": {
-        "node": "22.2.0"
+        "node": "22"
     },
     "repository": {
         "type": "git",
